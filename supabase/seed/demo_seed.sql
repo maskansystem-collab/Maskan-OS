@@ -36,6 +36,7 @@ declare
   v_vendor_id uuid;
   v_demo_owner_id uuid;
   v_demo_tenant_id uuid;
+  v_demo_vendor_id uuid;
 
   v_property_id uuid;
   v_unit_id uuid;
@@ -319,6 +320,53 @@ begin
     'Monthly common area electricity', 1200 + floor(random()*800), current_date - floor(random()*60)::int,
     'approved', v_accountant_profile, v_accountant_profile
   from unnest(v_property_ids) as p(id);
+
+  ------------------------------------------------------------------
+  -- Portal demo memberships
+  --
+  -- tenant@ and vendor@ were created as auth users but never given an
+  -- organisation_members row, so requireStaff() sent them to
+  -- /no-organisation and neither portal could be demonstrated.
+  --
+  -- The tenant is resolved at seed time rather than hardcoded, because the
+  -- names and volumes generated above are randomised. We take whoever ends
+  -- up with an active lease and a maintenance request, preferring the one
+  -- with the most cheques and payments, so every tab in the portal has
+  -- something on it. The vendor is whichever one actually holds a work order.
+  ------------------------------------------------------------------
+  select t.id into v_demo_tenant_id
+  from tenants t
+  join leases l on l.tenant_id = t.id and l.status = 'active'
+  where t.organisation_id = v_org_id
+  order by (select count(*) from maintenance_requests mr where mr.tenant_id = t.id) desc,
+           (select count(*) from cheques ch where ch.lease_id = l.id) desc,
+           (select count(*) from payments pp where pp.tenant_id = t.id) desc,
+           t.created_at
+  limit 1;
+
+  select v.id into v_demo_vendor_id
+  from vendors v
+  where v.organisation_id = v_org_id
+  order by (select count(*) from work_orders wo where wo.vendor_id = v.id) desc, v.created_at
+  limit 1;
+
+  insert into organisation_members (organisation_id, profile_id, tenant_id, is_active)
+  values (v_org_id, v_tenant_profile, v_demo_tenant_id, true);
+  insert into member_roles (organisation_member_id, role_id)
+  select om.id, v_role_tenant from organisation_members om
+  where om.profile_id = v_tenant_profile and om.organisation_id = v_org_id;
+
+  insert into organisation_members (organisation_id, profile_id, vendor_id, is_active)
+  values (v_org_id, v_vendor_profile, v_demo_vendor_id, true);
+  insert into member_roles (organisation_member_id, role_id)
+  select om.id, v_role_vendor from organisation_members om
+  where om.profile_id = v_vendor_profile and om.organisation_id = v_org_id;
+
+  -- Name the login after whoever it was linked to.
+  update profiles set full_name = (select name from tenants where id = v_demo_tenant_id)
+   where id = v_tenant_profile;
+  update profiles set full_name = (select name from vendors where id = v_demo_vendor_id)
+   where id = v_vendor_profile;
 
   ------------------------------------------------------------------
   -- Notifications for the demo tenant login
