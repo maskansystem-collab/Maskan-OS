@@ -3,7 +3,7 @@
 Every route in `maskan-v2.html`, against what exists in the Next.js app.
 Regenerate with `tools/inventory.md` as the reference.
 
-**44 of 99 built. 55 remaining.**
+**53 of 99 built. 46 remaining.**
 
 > Slice 1a, portfolio and letting, is in. Six screens are wired to real
 > queries. Four read stub data because this schema has no `leads`,
@@ -16,6 +16,10 @@ Regenerate with `tools/inventory.md` as the reference.
 > reconciliation and opening-balances read
 > `features/finance/stub-data.ts`; this schema has no bank_transactions,
 > reconciliation_sessions or opening_balances table.
+>
+> The owner portal is complete: all 10 screens. Seven read real data;
+> owner-mandate and owner-offers are stubs, because there is no
+> `mandates` or `offers` table. See `features/portals/owner-stub-data.ts`.
 
 | Role | Built | Remaining |
 | --- | --- | --- |
@@ -94,15 +98,15 @@ Regenerate with `tools/inventory.md` as the reference.
 | Prototype route | Contains | Status |
 | --- | --- | --- |
 | `owner` | 4 stat cards, 27 cards | built, `/owner` |
-| `ownership` | 1 table, 4 stat cards, 3 cards, 1 modal | **missing** |
-| `owner-mandate` | 4 stat cards, 9 cards | **missing** |
-| `owner-docs` | 6 cards | **missing** |
-| `owner-offers` | 1 table, 1 cards, 2 modals | **missing** |
-| `owner-vacancy` | 3 stat cards | **missing** |
-| `owner-fin` | 10 cards | **missing** |
-| `owner-stmt` | 10 cards | **missing** |
-| `owner-maint` | 3 cards | **missing** |
-| `owner-props` | 1 cards | **missing** |
+| `ownership` | 1 table, 4 stat cards, 3 cards, 1 modal | built, `/owner/ownership` |
+| `owner-mandate` | 4 stat cards, 9 cards | built, `/owner/mandate`, **stub data** |
+| `owner-docs` | 6 cards | built, `/owner/documents` |
+| `owner-offers` | 1 table, 1 cards, 2 modals | built, `/owner/offers`, **stub data** |
+| `owner-vacancy` | 3 stat cards | built, `/owner/vacancy` |
+| `owner-fin` | 10 cards | built, `/owner/finance` |
+| `owner-stmt` | 10 cards | built, `/owner/statements` |
+| `owner-maint` | 3 cards | built, `/owner/maintenance` |
+| `owner-props` | 1 cards | built, `/owner/properties` |
 
 ## Tenant portal
 
