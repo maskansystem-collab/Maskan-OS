@@ -3,13 +3,19 @@
 Every route in `maskan-v2.html`, against what exists in the Next.js app.
 Regenerate with `tools/inventory.md` as the reference.
 
-**36 of 99 built. 63 remaining.**
+**44 of 99 built. 55 remaining.**
 
 > Slice 1a, portfolio and letting, is in. Six screens are wired to real
 > queries. Four read stub data because this schema has no `leads`,
 > `offers`, `viewings` or `brokers` table; each is marked on screen and
 > points at `features/leasing/stub-data.ts`, which describes the
 > migration it needs.
+>
+> Slice 1b (money) is also in: ledger, outstanding, record-payment,
+> take-payment, statements and expenses are wired to real queries.
+> reconciliation and opening-balances read
+> `features/finance/stub-data.ts`; this schema has no bank_transactions,
+> reconciliation_sessions or opening_balances table.
 
 | Role | Built | Remaining |
 | --- | --- | --- |
@@ -26,12 +32,12 @@ Regenerate with `tools/inventory.md` as the reference.
 | --- | --- | --- |
 | `dashboard` | 9 stat cards, 61 cards | built, `/dashboard` |
 | `roles` | 2 tables, 3 cards, 1 modal | **missing** |
-| `reconciliation` | 4 stat cards, 7 cards, 1 modal | **missing** |
+| `reconciliation` | 4 stat cards, 7 cards, 1 modal | built, `/reconciliation`, **stub data** |
 | `offer` | 10 cards, 1 modal | built, `/offers/builder`, **stub data** |
 | `leasing` | 4 stat cards, 7 cards, 1 modal | built, `/leasing`, **stub data** |
 | `departments` | 4 stat cards, 4 cards, 1 modal | **missing** |
 | `buildings` | 1 table, 4 stat cards, 1 modal | built, `/buildings` |
-| `record-payment` | 14 cards | **missing** |
+| `record-payment` | 14 cards | built, `/record-payment` |
 | `subscription` | 4 stat cards, 13 cards, 2 modals | **missing** |
 | `movein-track` | 1 table, 4 stat cards, 5 cards | **missing** |
 | `leases` | 1 table | built, `/leases` |
@@ -53,25 +59,25 @@ Regenerate with `tools/inventory.md` as the reference.
 | `properties` | 1 table, 2 cards, 1 modal | built, `/properties` |
 | `building` | 5 stat cards, 9 cards, 3 modals | built, `/buildings/[id]` |
 | `tenants` | 1 table, 1 modal | built, `/tenants` |
-| `ledger` | 2 tables, 4 stat cards, 1 cards | **missing** |
+| `ledger` | 2 tables, 4 stat cards, 1 cards | built, `/ledger` |
 | `compliance-detail` | 12 cards, 2 modals | **missing** |
 | `mandates` | 1 table, 4 stat cards, 1 cards, 1 modal | **missing** |
 | `maint-detail` | 15 cards, 1 modal | **missing** |
 | `vacancy` | 1 table, 4 stat cards, 1 modal | built, `/vacancy` |
 | `contracts` | 1 table, 4 stat cards, 1 modal | **missing** |
-| `outstanding` | 1 table, 5 stat cards | **missing** |
+| `outstanding` | 1 table, 5 stat cards | built, `/outstanding` |
 | `cheques` | 1 table, 2 modals | built, `/payments/cheques` |
 | `offers` | 1 table, 4 stat cards, 1 modal | built, `/offers`, **stub data** |
-| `expenses` | 1 table, 1 modal | **missing** |
+| `expenses` | 1 table, 1 modal | built, `/expenses` |
 | `owners` | 1 table, 3 cards, 1 modal | built, `/owners` |
 | `templates` | 1 table, 1 cards, 2 modals | **missing** |
 | `brokers` | 1 table, 4 stat cards, 1 modal | **missing** |
 | `renewals` | 1 table, 4 stat cards, 1 modal | **missing** |
 | `lead` | 4 stat cards, 12 cards, 3 modals | built, `/leasing/[id]`, **stub data** |
-| `statements` | 1 table, 1 cards, 1 modal | **missing** |
+| `statements` | 1 table, 1 cards, 1 modal | built, `/statements` |
 | `unit` | 5 stat cards, 9 cards, 2 modals | built, `/units/[id]` |
-| `take-payment` | 1 cards | **missing** |
-| `opening-balances` | 1 table, 4 stat cards, 1 cards | **missing** |
+| `take-payment` | 1 cards | built, `/take-payment` |
+| `opening-balances` | 1 table, 4 stat cards, 1 cards | built, `/opening-balances`, **stub data** |
 | `reports` | 1 table, 4 stat cards | built, `/reports` |
 | `cheque` | 14 cards, 1 modal | **missing** |
 | `broker` | 1 table, 4 stat cards, 6 cards, 1 modal | **missing** |
