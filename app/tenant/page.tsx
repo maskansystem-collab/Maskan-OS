@@ -51,7 +51,10 @@ type MaintenanceRow = {
   status: string; created_at: string; category_name: string | null;
   latestUpdate: string | null;
 };
-type DocumentRow = { id: string; title: string; category: string; created_at: string };
+type TenantDocumentRow = { id: string; title: string; category: string; created_at: string };
+type LeaseDocumentRow = { id: string; title: string; created_at: string };
+/** getTenantDocuments returns two arrays, not one; lease documents have no category. */
+type TenantDocuments = { tenantDocuments: TenantDocumentRow[]; leaseDocuments: LeaseDocumentRow[] };
 
 
 export default async function TenantPortalPage() {
@@ -279,28 +282,46 @@ export default async function TenantPortalPage() {
         </TabsContent>
 
         <TabsContent value="documents">
-          {documents.length === 0 ? (
-            <EmptyState icon={FileText} title="No documents" description="Your lease and other paperwork will appear here." />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Added</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="stagger">
-                {(documents as DocumentRow[]).map((d) => (
-                  <TableRow key={d.id}>
-                    <TableCell className="text-neutral-900">{d.title}</TableCell>
-                    <TableCell className="capitalize text-neutral-600">{String(d.category).replace(/_/g, " ")}</TableCell>
-                    <TableCell className="text-neutral-600">{formatDate(d.created_at)}</TableCell>
+          {(() => {
+            const docs = documents as TenantDocuments;
+            // Lease paperwork first, since that is what a tenant usually
+            // came looking for, then anything filed against them personally.
+            const rows = [
+              ...docs.leaseDocuments.map((d) => ({ ...d, category: "lease" })),
+              ...docs.tenantDocuments,
+            ];
+            if (rows.length === 0) {
+              return (
+                <EmptyState
+                  icon={FileText}
+                  title="No documents"
+                  description="Your lease and other paperwork will appear here."
+                />
+              );
+            }
+            return (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Added</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+                </TableHeader>
+                <TableBody className="stagger">
+                  {rows.map((d) => (
+                    <TableRow key={d.id}>
+                      <TableCell className="text-neutral-900">{d.title}</TableCell>
+                      <TableCell className="capitalize text-neutral-600">
+                        {String(d.category).replace(/_/g, " ")}
+                      </TableCell>
+                      <TableCell className="text-neutral-600">{formatDate(d.created_at)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            );
+          })()}
         </TabsContent>
       </Tabs>
 
