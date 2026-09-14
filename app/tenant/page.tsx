@@ -17,6 +17,7 @@ import {
   RenewalOfferCard,
 } from "@/features/portals/components/tenant-components";
 import PortalLayout from "@/components/layout/portal-layout";
+import { TENANT_NAV } from "@/features/portals/tenant-nav";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -65,7 +66,7 @@ export default async function TenantPortalPage() {
 
   if (!tenantId) {
     return (
-      <PortalLayout title="Tenant">
+      <PortalLayout title="Tenant" nav={TENANT_NAV}>
         <EmptyState
           icon={AlertCircle}
           title="Your account is not linked to a tenancy"
@@ -89,7 +90,7 @@ export default async function TenantPortalPage() {
     ]);
 
   return (
-    <PortalLayout title="Tenant">
+    <PortalLayout title="Tenant" nav={TENANT_NAV}>
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-neutral-900">
           {home.lease ? `${home.lease.property_name}, unit ${home.lease.unit_number}` : "Your tenancy"}

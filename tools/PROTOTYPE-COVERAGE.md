@@ -3,7 +3,7 @@
 Every route in `maskan-v2.html`, against what exists in the Next.js app.
 Regenerate with `tools/inventory.md` as the reference.
 
-**53 of 99 built. 46 remaining.**
+**59 of 99 built. 40 remaining.**
 
 > Slice 1a, portfolio and letting, is in. Six screens are wired to real
 > queries. Four read stub data because this schema has no `leads`,
@@ -20,6 +20,11 @@ Regenerate with `tools/inventory.md` as the reference.
 > The owner portal is complete: all 10 screens. Seven read real data;
 > owner-mandate and owner-offers are stubs, because there is no
 > `mandates` or `offers` table. See `features/portals/owner-stub-data.ts`.
+>
+> The tenant portal is complete: all 7 screens. Five read real data.
+> tenant-msg shows real notifications but stubbed conversations, because
+> there is no `messages` or `conversations` table. See
+> `features/portals/tenant-stub-data.ts`.
 
 | Role | Built | Remaining |
 | --- | --- | --- |
@@ -112,13 +117,13 @@ Regenerate with `tools/inventory.md` as the reference.
 
 | Prototype route | Contains | Status |
 | --- | --- | --- |
-| `tenant-pay` | 24 cards, 1 modal | **missing** |
+| `tenant-pay` | 24 cards, 1 modal | built, `/tenant/rent` |
 | `tenant` | 11 cards, 1 modal | built, `/tenant` |
-| `tenant-lease` | 13 cards | **missing** |
-| `tenant-docs` | 5 cards | **missing** |
-| `tenant-msg` | 3 cards | **missing** |
-| `tenant-contract` | 7 cards, 1 modal | **missing** |
-| `tenant-maint` | 2 cards, 1 modal | **missing** |
+| `tenant-lease` | 13 cards | built, `/tenant/lease` |
+| `tenant-docs` | 5 cards | built, `/tenant/documents` |
+| `tenant-msg` | 3 cards | built, `/tenant/messages`, **stub conversations** |
+| `tenant-contract` | 7 cards, 1 modal | built, `/tenant/contract` |
+| `tenant-maint` | 2 cards, 1 modal | built, `/tenant/maintenance` |
 
 ## Contractor portal
 
