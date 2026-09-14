@@ -3,8 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Building2, Users, UserRound, FileText, Wrench,
-  Wallet, Landmark, BarChart3, Settings, ChevronsUpDown,
+  BarChart3,
+  Building,
+  Building2,
+  ChevronsUpDown,
+  DoorOpen,
+  FileSignature,
+  FileText,
+  Landmark,
+  Layers,
+  LayoutDashboard,
+  Settings,
+  Target,
+  UserRound,
+  Users,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { APP_CONFIG } from "@/lib/config/app";
@@ -12,6 +26,11 @@ import { APP_CONFIG } from "@/lib/config/app";
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/properties", label: "Properties", icon: Building2 },
+  { href: "/buildings", label: "Buildings", icon: Building },
+  { href: "/units", label: "Units", icon: Layers },
+  { href: "/vacancy", label: "Vacant units", icon: DoorOpen },
+  { href: "/leasing", label: "Pipeline", icon: Target },
+  { href: "/offers", label: "Offers", icon: FileSignature },
   { href: "/owners", label: "Owners", icon: UserRound },
   { href: "/tenants", label: "Tenants", icon: Users },
   { href: "/leases", label: "Leases", icon: FileText },
