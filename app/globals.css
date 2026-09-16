@@ -173,6 +173,23 @@
   to   { opacity: 1; }
 }
 
+/* ── marketing page motion ── */
+@keyframes grow-bar { from { width: 0; } }
+@keyframes draw-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* Reveal on scroll, with no JavaScript. */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: slide-up 0.7s var(--ease-settle) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 22%;
+  }
+}
+
 /* The staggering is decoration; drop it when asked to. */
 @media (prefers-reduced-motion: reduce) {
   .stagger > *, *, *::before, *::after {
