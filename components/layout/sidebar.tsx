@@ -8,6 +8,7 @@ import {
   FileText, LayoutDashboard, Settings, Wallet, Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { MaskanLogo } from "@/components/brand/logo";
 
 type Item = { href: string; label: string };
 type Section =
@@ -94,19 +95,11 @@ export function Sidebar({ orgName }: { orgName: string }) {
 
   return (
     <aside className="hidden w-[228px] shrink-0 flex-col border-r border-neutral-200 bg-white md:flex">
-      {/* The brand lock-up: ink tile, Archivo wordmark, lime OS badge. */}
-      <div className="flex h-14 items-center gap-2.5 border-b border-neutral-200 px-4">
-        <div className="grid h-7 w-7 place-items-center rounded-[9px] bg-neutral-900 text-[12px] font-extrabold text-lime">
-          OS
-        </div>
-        <div className="flex items-center gap-[5px]">
-          <span className="font-display text-[16px] font-extrabold leading-none tracking-[-0.045em] text-neutral-900 [font-stretch:108%]">
-            Maskan
-          </span>
-          <span className="rounded-[5px] bg-lime px-[5px] py-[3px] font-display text-[11px] font-extrabold leading-none text-neutral-900 [font-stretch:108%]">
-            OS
-          </span>
-        </div>
+      {/* The Maskan lockup, taking its colour from the surface. */}
+      <div className="flex h-14 items-center border-b border-neutral-200 px-4">
+        <Link href="/dashboard" aria-label="Maskan">
+          <MaskanLogo className="h-[26px] w-auto text-neutral-900" />
+        </Link>
       </div>
 
       <button className="mx-3 mt-3 flex items-center justify-between rounded-[9px] border border-neutral-200 px-2.5 py-2 text-left text-xs transition-colors hover:bg-neutral-50">

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { requirePlatformSuperAdmin } from "@/lib/permissions/guards";
 import { signOutAction } from "@/features/auth/actions";
+import { MaskanLogo } from "@/components/brand/logo";
 
 /**
  * Shell for the platform console.
@@ -22,11 +23,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="min-h-screen bg-neutral-50">
       <header className="border-b border-neutral-200 bg-neutral-900">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 md:px-8">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-lime text-xs font-bold text-neutral-900">
-              R
-            </span>
-            <span className="text-sm font-semibold text-white">Platform console</span>
+          <div className="flex items-center gap-3">
+            <MaskanLogo className="h-[24px] w-auto text-neutral-50" />
+            <span className="text-sm text-neutral-400">Platform console</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-neutral-300 sm:inline">{ctx.fullName}</span>

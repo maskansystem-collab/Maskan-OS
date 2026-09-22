@@ -9,6 +9,7 @@ import { landingPathFor } from "@/lib/permissions/guards";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShot, ArrearsShot, ChequeShot } from "@/features/marketing/product-shots";
 import { Button } from "@/components/ui/button";
+import { MaskanLogo } from "@/components/brand/logo";
 
 export const dynamic = "force-dynamic";
 
@@ -41,18 +42,8 @@ export default async function LandingPage() {
       {/* ── header ── */}
       <header className="sticky top-0 z-50 border-b border-neutral-200/70 bg-paper/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1180px] items-center justify-between gap-6 px-5">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-neutral-900 text-[13px] font-extrabold text-lime">
-              OS
-            </span>
-            <span className="flex items-center gap-[5px]">
-              <span className="font-display text-[18px] font-extrabold leading-none tracking-[-0.045em] text-neutral-900 [font-stretch:108%]">
-                Maskan
-              </span>
-              <span className="rounded-[5px] bg-lime px-[5px] py-[3px] font-display text-[11px] font-extrabold leading-none text-neutral-900 [font-stretch:108%]">
-                OS
-              </span>
-            </span>
+          <Link href="/" aria-label="Maskan">
+            <MaskanLogo className="h-[28px] w-auto text-neutral-900" />
           </Link>
 
           <nav className="hidden items-center gap-7 text-[13.5px] text-neutral-600 md:flex">
@@ -359,13 +350,9 @@ export default async function LandingPage() {
       {/* ── footer ── */}
       <footer className="border-t border-neutral-200 py-10">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4 px-5">
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-7 w-7 place-items-center rounded-[9px] bg-neutral-900 text-[12px] font-extrabold text-lime">
-              OS
-            </span>
-            <span className="text-[13px] text-neutral-600">
-              Maskan OS — property management for Qatar
-            </span>
+          <div className="flex items-center gap-3">
+            <MaskanLogo className="h-[22px] w-auto text-neutral-900" />
+            <span className="text-[13px] text-neutral-600">Property management for Qatar</span>
           </div>
           <p className="text-[12.5px] text-neutral-400">
             © {new Date().getFullYear()} Maskan OS
