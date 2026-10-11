@@ -10,3 +10,9 @@ next-env.d.ts
 marketing/deck/Maskan-OS-deck.pptx
 __pycache__/
 *.pyc
+
+# Intermediate files from tools/dump-schema-facts.sql
+types/tables.txt
+types/fks.txt
+types/enums.txt
+types/fns.txt
