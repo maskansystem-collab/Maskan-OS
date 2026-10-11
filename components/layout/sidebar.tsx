@@ -32,6 +32,7 @@ const NAV: Section[] = [
       { href: "/buildings", label: "Buildings" },
       { href: "/units", label: "Units" },
       { href: "/owners", label: "Owners" },
+      { href: "/mandates", label: "Mandates" },
     ],
   },
   {
@@ -42,6 +43,7 @@ const NAV: Section[] = [
       { href: "/offers", label: "Offers" },
       { href: "/leases", label: "Leases" },
       { href: "/tenants", label: "Tenants" },
+      { href: "/undertakings", label: "Undertakings" },
     ],
   },
   {

@@ -459,3 +459,93 @@ export async function getUndertaking(
       : null,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Owner portal                                                        */
+/* ------------------------------------------------------------------ */
+
+export interface OwnerAuthority {
+  key: string;
+  label: string;
+  granted: boolean;
+  /** What it means for the owner, in their terms. */
+  detail: string;
+}
+
+export interface OwnerMandateView extends MandateDetail {
+  authorities: OwnerAuthority[];
+}
+
+/**
+ * The mandate as the owner sees it.
+ *
+ * Same record, different voice: an owner wants to know what happens
+ * without them and what waits for them, not which boolean is set.
+ */
+export async function getOwnerMandate(ownerId: string): Promise<OwnerMandateView | null> {
+  const supabase = await createClient();
+
+  // The owner's own RLS policy scopes this to their mandate, so no
+  // organisation argument is needed or wanted here.
+  const { data: row } = await supabase
+    .from("mandates")
+    .select("id, organisation_id")
+    .eq("owner_id", ownerId)
+    .neq("status", "draft")
+    .order("ends_on", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!row) return null;
+
+  const m = await getMandate(row.organisation_id, row.id);
+  if (!m) return null;
+
+  const cap = m.authority.maintenance_spend_cap;
+
+  return {
+    ...m,
+    authorities: [
+      {
+        key: "may_sign_lease",
+        label: "Sign a tenancy on your behalf",
+        granted: m.authority.may_sign_lease,
+        detail: m.authority.may_sign_lease
+          ? "At the asking rent. Anything below it comes back to you."
+          : "Every tenancy is signed by you.",
+      },
+      {
+        key: "may_accept_offers",
+        label: "Accept an offer without asking",
+        granted: m.authority.may_accept_offers,
+        detail: m.authority.may_accept_offers
+          ? "Offers at or above the asking rent are accepted on your behalf."
+          : "Every offer is put to you, whatever the amount.",
+      },
+      {
+        key: "may_hold_deposit",
+        label: "Hold the security deposit",
+        granted: m.authority.may_hold_deposit,
+        detail: m.authority.may_hold_deposit
+          ? "Held in the client account and returned at the end of the tenancy."
+          : "The deposit is held by you, not by us.",
+      },
+      {
+        key: "may_register_lease",
+        label: "Register the lease",
+        granted: m.authority.may_register_lease,
+        detail: m.authority.may_register_lease
+          ? "Done within the statutory window after signing."
+          : "Registration is handled by you.",
+      },
+      {
+        key: "maintenance_spend_cap",
+        label: cap > 0 ? `Approve repairs up to ${cap.toLocaleString("en-QA")} QAR` : "Approve repairs",
+        granted: cap > 0,
+        detail: cap > 0
+          ? "Anything above that waits for you, however urgent."
+          : "Every repair waits for your approval, however urgent.",
+      },
+    ],
+  };
+}
