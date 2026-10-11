@@ -1,0 +1,14 @@
+clear_cheque_to_payment|p_cheque_id uuid, p_actor uuid|uuid
+current_profile_id||uuid
+generate_rent_schedule|p_lease_id uuid, p_actor uuid DEFAULT NULL::uuid|uuid
+has_permission|org_id uuid, perm_code text|boolean
+has_role|org_id uuid, VARIADIC role_keys member_role_key[]|boolean
+is_org_member|org_id uuid|boolean
+is_org_staff|org_id uuid|boolean
+is_platform_super_admin||boolean
+is_vendor_member|v_id uuid|boolean
+my_organisation_ids||SETOF uuid
+property_organisation|p_property_id uuid|uuid
+recompute_instalment_status|instalment_id uuid|void
+unit_organisation|p_unit_id uuid|uuid
+write_audit_log|p_org_id uuid, p_action text, p_entity_table text, p_entity_id uuid, p_metadata jsonb DEFAULT '{}'::jsonb|void

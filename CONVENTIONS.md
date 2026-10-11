@@ -111,8 +111,9 @@ whole organisation.
 That cycle makes Postgres abort the query with "infinite recursion
 detected in policy", which takes the table down for everyone, not just
 the portal user the policy was for. Resolve the parent through a
-`security definer` helper instead — `property_organisation(uuid)` and
-`unit_organisation(uuid)` exist for this, and both pin `search_path`.
+`security definer` helper instead — `property_org(uuid)`, `unit_org(uuid)`,
+`owns_property(uuid)`, `owns_unit(uuid)` and `tenant_occupies_unit(uuid)`
+exist for this, and all five pin `search_path`.
 
 **Every new table needs its portal clause written at the same time as its
 staff clause,** plus a case in the access matrix. `owners` went without a

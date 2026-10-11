@@ -239,7 +239,7 @@ create policy properties_staff_select on properties for select
 
 drop policy if exists property_documents_select on property_documents;
 create policy property_documents_select on property_documents for select
-  using (is_org_staff(property_organisation(property_id)));
+  using (is_org_staff(property_org(property_id)));
 
 drop policy if exists property_expenses_select on property_expenses;
 create policy property_expenses_select on property_expenses for select
@@ -247,7 +247,7 @@ create policy property_expenses_select on property_expenses for select
 
 drop policy if exists property_owners_select on property_owners;
 create policy property_owners_select on property_owners for select
-  using (is_org_staff(property_organisation(property_id)));
+  using (is_org_staff(property_org(property_id)));
 
 drop policy if exists receipts_select on receipts;
 create policy receipts_select on receipts for select
@@ -292,7 +292,7 @@ create policy undertakings_staff_select on undertakings for select
 
 drop policy if exists unit_owners_select on unit_owners;
 create policy unit_owners_select on unit_owners for select
-  using (is_org_staff(unit_organisation(unit_id)));
+  using (is_org_staff(unit_org(unit_id)));
 
 drop policy if exists units_staff_select on units;
 create policy units_staff_select on units for select

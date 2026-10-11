@@ -54,12 +54,15 @@ begin
     ('55555555-5555-5555-5555-555555555555', '11111111-1111-1111-1111-111111111111', 'Ahmed Hassan'),
     ('f0000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Another Tenant');
 
+  -- An active lease, not the default draft: tenant_occupies_unit() only
+  -- counts a live tenancy, so a draft would make the tenant's own unit
+  -- invisible and the fixture would be testing the wrong thing.
   insert into leases (id, organisation_id, property_id, unit_id, tenant_id, owner_id, lease_code,
-      start_date, end_date, monthly_rent, total_contract_rent)
+      start_date, end_date, monthly_rent, total_contract_rent, status)
   values ('66666666-6666-6666-6666-666666666666', '11111111-1111-1111-1111-111111111111',
     '33333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444',
     '55555555-5555-5555-5555-555555555555', '22222222-2222-2222-2222-222222222222', 'LEASE-0003',
-    '2026-02-01', '2027-01-31', 8500, 102000);
+    '2026-02-01', '2027-01-31', 8500, 102000, 'active');
 
   insert into mandates (organisation_id, owner_id, mandate_code, mandate_type, starts_on, ends_on,
       may_sign_lease, may_hold_deposit, may_register_lease, maintenance_spend_cap)
@@ -137,14 +140,19 @@ end;
 $$;
 
 -- Run as a role RLS applies to. A superuser would pass everything.
-drop role if exists rls_test_reader;
-create role rls_test_reader nologin;
-grant usage on schema public, auth to rls_test_reader;
-grant select on all tables in schema public to rls_test_reader;
-grant select on all tables in schema auth to rls_test_reader;
-grant execute on all functions in schema public to rls_test_reader;
+--
+-- The role is named after the database: a role cannot be dropped while
+-- another database still holds grants to it, so a shared name makes a
+-- leftover test database block every later run.
+select format('rls_reader_%s', current_database()) as reader \gset
+drop role if exists :"reader";
+create role :"reader" nologin;
+grant usage on schema public, auth to :"reader";
+grant select on all tables in schema public to :"reader";
+grant select on all tables in schema auth to :"reader";
+grant execute on all functions in schema public to :"reader";
 -- The matrix records its own results, so the test role needs to write here.
-grant insert on test_results to rls_test_reader;
+grant insert on test_results to :"reader";
 
 -- Deliberately NOT security definer: the whole point is to be evaluated
 -- with the test role's own rights, so that RLS applies.
@@ -215,7 +223,7 @@ end;
 $$;
 
 -- Switch to a role RLS applies to. As superuser every case would pass.
-set role rls_test_reader;
+set role :"reader";
 select run_access_matrix();
 reset role;
 reset request.jwt.claim.sub;

@@ -47,7 +47,7 @@ export type Database = {
           value?: Json;
         };
         Relationships: [
-          { foreignKeyName: "app_settings_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: true; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "app_settings_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
         ];
       };
       audit_logs: {
@@ -532,7 +532,7 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "feature_flags_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: true; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "feature_flags_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
         ];
       };
       integration_connections: {
@@ -571,7 +571,7 @@ export type Database = {
         };
         Relationships: [
           { foreignKeyName: "integration_connections_connected_by_fkey"; columns: ["connected_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "integration_connections_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: true; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "integration_connections_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
         ];
       };
       invitations: {
@@ -864,7 +864,7 @@ export type Database = {
         };
         Relationships: [
           { foreignKeyName: "leases_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "leases_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: true; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "leases_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
           { foreignKeyName: "leases_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "owners"; referencedColumns: ["id"] },
           { foreignKeyName: "leases_previous_lease_id_fkey"; columns: ["previous_lease_id"]; isOneToOne: false; referencedRelation: "leases"; referencedColumns: ["id"] },
           { foreignKeyName: "leases_property_id_fkey"; columns: ["property_id"]; isOneToOne: false; referencedRelation: "properties"; referencedColumns: ["id"] },
@@ -1017,7 +1017,7 @@ export type Database = {
           { foreignKeyName: "maintenance_requests_category_id_fkey"; columns: ["category_id"]; isOneToOne: false; referencedRelation: "maintenance_categories"; referencedColumns: ["id"] },
           { foreignKeyName: "maintenance_requests_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
           { foreignKeyName: "maintenance_requests_lease_id_fkey"; columns: ["lease_id"]; isOneToOne: false; referencedRelation: "leases"; referencedColumns: ["id"] },
-          { foreignKeyName: "maintenance_requests_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: true; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "maintenance_requests_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
           { foreignKeyName: "maintenance_requests_property_id_fkey"; columns: ["property_id"]; isOneToOne: false; referencedRelation: "properties"; referencedColumns: ["id"] },
           { foreignKeyName: "maintenance_requests_tenant_id_fkey"; columns: ["tenant_id"]; isOneToOne: false; referencedRelation: "tenants"; referencedColumns: ["id"] },
           { foreignKeyName: "maintenance_requests_unit_id_fkey"; columns: ["unit_id"]; isOneToOne: false; referencedRelation: "units"; referencedColumns: ["id"] },
@@ -1063,6 +1063,107 @@ export type Database = {
           { foreignKeyName: "management_fees_property_id_fkey"; columns: ["property_id"]; isOneToOne: false; referencedRelation: "properties"; referencedColumns: ["id"] },
         ];
       };
+      mandate_properties: {
+        Row: {
+          mandate_id: string;
+          property_id: string;
+        };
+        Insert: {
+          mandate_id: string;
+          property_id: string;
+        };
+        Update: {
+          mandate_id?: string;
+          property_id?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "mandate_properties_mandate_id_fkey"; columns: ["mandate_id"]; isOneToOne: false; referencedRelation: "mandates"; referencedColumns: ["id"] },
+          { foreignKeyName: "mandate_properties_property_id_fkey"; columns: ["property_id"]; isOneToOne: false; referencedRelation: "properties"; referencedColumns: ["id"] },
+        ];
+      };
+      mandates: {
+        Row: {
+          id: string;
+          organisation_id: string;
+          owner_id: string;
+          mandate_code: string;
+          mandate_type: Database["public"]["Enums"]["mandate_type"];
+          is_exclusive: boolean;
+          starts_on: string;
+          ends_on: string;
+          notice_days: number;
+          status: Database["public"]["Enums"]["mandate_status"];
+          may_sign_lease: boolean;
+          may_accept_offers: boolean;
+          may_hold_deposit: boolean;
+          may_register_lease: boolean;
+          maintenance_spend_cap: number;
+          management_fee_pct: number | null;
+          letting_fee_months: number | null;
+          renewal_fee_months: number | null;
+          contract_document_id: string | null;
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organisation_id: string;
+          owner_id: string;
+          mandate_code: string;
+          mandate_type?: Database["public"]["Enums"]["mandate_type"];
+          is_exclusive?: boolean;
+          starts_on: string;
+          ends_on: string;
+          notice_days?: number;
+          status?: Database["public"]["Enums"]["mandate_status"];
+          may_sign_lease?: boolean;
+          may_accept_offers?: boolean;
+          may_hold_deposit?: boolean;
+          may_register_lease?: boolean;
+          maintenance_spend_cap?: number;
+          management_fee_pct?: number | null;
+          letting_fee_months?: number | null;
+          renewal_fee_months?: number | null;
+          contract_document_id?: string | null;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organisation_id?: string;
+          owner_id?: string;
+          mandate_code?: string;
+          mandate_type?: Database["public"]["Enums"]["mandate_type"];
+          is_exclusive?: boolean;
+          starts_on?: string;
+          ends_on?: string;
+          notice_days?: number;
+          status?: Database["public"]["Enums"]["mandate_status"];
+          may_sign_lease?: boolean;
+          may_accept_offers?: boolean;
+          may_hold_deposit?: boolean;
+          may_register_lease?: boolean;
+          maintenance_spend_cap?: number;
+          management_fee_pct?: number | null;
+          letting_fee_months?: number | null;
+          renewal_fee_months?: number | null;
+          contract_document_id?: string | null;
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "mandates_contract_document_id_fkey"; columns: ["contract_document_id"]; isOneToOne: false; referencedRelation: "documents"; referencedColumns: ["id"] },
+          { foreignKeyName: "mandates_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "mandates_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "mandates_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "owners"; referencedColumns: ["id"] },
+        ];
+      };
       member_roles: {
         Row: {
           organisation_member_id: string;
@@ -1077,8 +1178,8 @@ export type Database = {
           role_id?: string;
         };
         Relationships: [
-          { foreignKeyName: "member_roles_organisation_member_id_fkey"; columns: ["organisation_member_id"]; isOneToOne: true; referencedRelation: "organisation_members"; referencedColumns: ["id"] },
-          { foreignKeyName: "member_roles_role_id_fkey"; columns: ["role_id"]; isOneToOne: true; referencedRelation: "roles"; referencedColumns: ["id"] },
+          { foreignKeyName: "member_roles_organisation_member_id_fkey"; columns: ["organisation_member_id"]; isOneToOne: false; referencedRelation: "organisation_members"; referencedColumns: ["id"] },
+          { foreignKeyName: "member_roles_role_id_fkey"; columns: ["role_id"]; isOneToOne: false; referencedRelation: "roles"; referencedColumns: ["id"] },
         ];
       };
       notification_preferences: {
@@ -1104,7 +1205,7 @@ export type Database = {
           is_enabled?: boolean;
         };
         Relationships: [
-          { foreignKeyName: "notification_preferences_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: true; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "notification_preferences_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
       notifications: {
@@ -1213,8 +1314,8 @@ export type Database = {
           { foreignKeyName: "fk_org_members_owner"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "owners"; referencedColumns: ["id"] },
           { foreignKeyName: "fk_org_members_tenant"; columns: ["tenant_id"]; isOneToOne: false; referencedRelation: "tenants"; referencedColumns: ["id"] },
           { foreignKeyName: "fk_org_members_vendor"; columns: ["vendor_id"]; isOneToOne: false; referencedRelation: "vendors"; referencedColumns: ["id"] },
-          { foreignKeyName: "organisation_members_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: true; referencedRelation: "organisations"; referencedColumns: ["id"] },
-          { foreignKeyName: "organisation_members_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: true; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "organisation_members_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "organisation_members_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ];
       };
       organisation_subscriptions: {
@@ -1484,7 +1585,7 @@ export type Database = {
         Relationships: [
           { foreignKeyName: "owner_statements_finalised_by_fkey"; columns: ["finalised_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
           { foreignKeyName: "owner_statements_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
-          { foreignKeyName: "owner_statements_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: true; referencedRelation: "owners"; referencedColumns: ["id"] },
+          { foreignKeyName: "owner_statements_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "owners"; referencedColumns: ["id"] },
         ];
       };
       owner_transactions: {
@@ -1863,7 +1964,9 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          { foreignKeyName: "profiles_id_fkey"; columns: ["id"]; isOneToOne: true; referencedRelation: "auth.users"; referencedColumns: ["id"] },
+        ];
       };
       properties: {
         Row: {
@@ -1922,7 +2025,7 @@ export type Database = {
         };
         Relationships: [
           { foreignKeyName: "properties_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "properties_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: true; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "properties_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
         ];
       };
       property_documents: {
@@ -2054,8 +2157,8 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "property_owners_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: true; referencedRelation: "owners"; referencedColumns: ["id"] },
-          { foreignKeyName: "property_owners_property_id_fkey"; columns: ["property_id"]; isOneToOne: true; referencedRelation: "properties"; referencedColumns: ["id"] },
+          { foreignKeyName: "property_owners_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "owners"; referencedColumns: ["id"] },
+          { foreignKeyName: "property_owners_property_id_fkey"; columns: ["property_id"]; isOneToOne: false; referencedRelation: "properties"; referencedColumns: ["id"] },
         ];
       };
       receipts: {
@@ -2084,7 +2187,7 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "receipts_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: true; referencedRelation: "organisations"; referencedColumns: ["id"] },
+          { foreignKeyName: "receipts_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
           { foreignKeyName: "receipts_payment_id_fkey"; columns: ["payment_id"]; isOneToOne: false; referencedRelation: "payments"; referencedColumns: ["id"] },
         ];
       };
@@ -2131,7 +2234,7 @@ export type Database = {
         Relationships: [
           { foreignKeyName: "rent_instalments_lease_id_fkey"; columns: ["lease_id"]; isOneToOne: false; referencedRelation: "leases"; referencedColumns: ["id"] },
           { foreignKeyName: "rent_instalments_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
-          { foreignKeyName: "rent_instalments_rent_schedule_id_fkey"; columns: ["rent_schedule_id"]; isOneToOne: true; referencedRelation: "rent_schedules"; referencedColumns: ["id"] },
+          { foreignKeyName: "rent_instalments_rent_schedule_id_fkey"; columns: ["rent_schedule_id"]; isOneToOne: false; referencedRelation: "rent_schedules"; referencedColumns: ["id"] },
         ];
       };
       rent_schedules: {
@@ -2178,8 +2281,8 @@ export type Database = {
           permission_id?: string;
         };
         Relationships: [
-          { foreignKeyName: "role_permissions_permission_id_fkey"; columns: ["permission_id"]; isOneToOne: true; referencedRelation: "permissions"; referencedColumns: ["id"] },
-          { foreignKeyName: "role_permissions_role_id_fkey"; columns: ["role_id"]; isOneToOne: true; referencedRelation: "roles"; referencedColumns: ["id"] },
+          { foreignKeyName: "role_permissions_permission_id_fkey"; columns: ["permission_id"]; isOneToOne: false; referencedRelation: "permissions"; referencedColumns: ["id"] },
+          { foreignKeyName: "role_permissions_role_id_fkey"; columns: ["role_id"]; isOneToOne: false; referencedRelation: "roles"; referencedColumns: ["id"] },
         ];
       };
       roles: {
@@ -2362,6 +2465,89 @@ export type Database = {
           { foreignKeyName: "tenants_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
         ];
       };
+      undertakings: {
+        Row: {
+          id: string;
+          organisation_id: string;
+          lease_id: string;
+          undertaking_code: string;
+          payer_name: string;
+          payer_cr_number: string | null;
+          payer_contact_name: string | null;
+          payer_email: string | null;
+          payer_phone: string | null;
+          covers: Database["public"]["Enums"]["undertaking_cover"];
+          cap_amount: number | null;
+          cap_period: Database["public"]["Enums"]["undertaking_cap_period"];
+          settlement: Database["public"]["Enums"]["undertaking_settlement"];
+          letter_signed_on: string | null;
+          letter_expires_on: string | null;
+          letter_document_id: string | null;
+          contract_party_name: string | null;
+          cheque_payer_name: string | null;
+          status: Database["public"]["Enums"]["undertaking_status"];
+          notes: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organisation_id: string;
+          lease_id: string;
+          undertaking_code: string;
+          payer_name: string;
+          payer_cr_number?: string | null;
+          payer_contact_name?: string | null;
+          payer_email?: string | null;
+          payer_phone?: string | null;
+          covers: Database["public"]["Enums"]["undertaking_cover"];
+          cap_amount?: number | null;
+          cap_period?: Database["public"]["Enums"]["undertaking_cap_period"];
+          settlement?: Database["public"]["Enums"]["undertaking_settlement"];
+          letter_signed_on?: string | null;
+          letter_expires_on?: string | null;
+          letter_document_id?: string | null;
+          contract_party_name?: string | null;
+          cheque_payer_name?: string | null;
+          status?: Database["public"]["Enums"]["undertaking_status"];
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organisation_id?: string;
+          lease_id?: string;
+          undertaking_code?: string;
+          payer_name?: string;
+          payer_cr_number?: string | null;
+          payer_contact_name?: string | null;
+          payer_email?: string | null;
+          payer_phone?: string | null;
+          covers?: Database["public"]["Enums"]["undertaking_cover"];
+          cap_amount?: number | null;
+          cap_period?: Database["public"]["Enums"]["undertaking_cap_period"];
+          settlement?: Database["public"]["Enums"]["undertaking_settlement"];
+          letter_signed_on?: string | null;
+          letter_expires_on?: string | null;
+          letter_document_id?: string | null;
+          contract_party_name?: string | null;
+          cheque_payer_name?: string | null;
+          status?: Database["public"]["Enums"]["undertaking_status"];
+          notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "undertakings_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "undertakings_lease_id_fkey"; columns: ["lease_id"]; isOneToOne: false; referencedRelation: "leases"; referencedColumns: ["id"] },
+          { foreignKeyName: "undertakings_letter_document_id_fkey"; columns: ["letter_document_id"]; isOneToOne: false; referencedRelation: "documents"; referencedColumns: ["id"] },
+          { foreignKeyName: "undertakings_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
+        ];
+      };
       unit_owners: {
         Row: {
           id: string;
@@ -2385,8 +2571,8 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "unit_owners_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: true; referencedRelation: "owners"; referencedColumns: ["id"] },
-          { foreignKeyName: "unit_owners_unit_id_fkey"; columns: ["unit_id"]; isOneToOne: true; referencedRelation: "units"; referencedColumns: ["id"] },
+          { foreignKeyName: "unit_owners_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "owners"; referencedColumns: ["id"] },
+          { foreignKeyName: "unit_owners_unit_id_fkey"; columns: ["unit_id"]; isOneToOne: false; referencedRelation: "units"; referencedColumns: ["id"] },
         ];
       };
       units: {
@@ -2453,7 +2639,7 @@ export type Database = {
         Relationships: [
           { foreignKeyName: "units_building_id_fkey"; columns: ["building_id"]; isOneToOne: false; referencedRelation: "buildings"; referencedColumns: ["id"] },
           { foreignKeyName: "units_organisation_id_fkey"; columns: ["organisation_id"]; isOneToOne: false; referencedRelation: "organisations"; referencedColumns: ["id"] },
-          { foreignKeyName: "units_property_id_fkey"; columns: ["property_id"]; isOneToOne: true; referencedRelation: "properties"; referencedColumns: ["id"] },
+          { foreignKeyName: "units_property_id_fkey"; columns: ["property_id"]; isOneToOne: false; referencedRelation: "properties"; referencedColumns: ["id"] },
         ];
       };
       vendor_contacts: {
@@ -2573,8 +2759,8 @@ export type Database = {
           created_at?: string;
         };
         Relationships: [
-          { foreignKeyName: "vendor_members_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: true; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "vendor_members_vendor_id_fkey"; columns: ["vendor_id"]; isOneToOne: true; referencedRelation: "vendors"; referencedColumns: ["id"] },
+          { foreignKeyName: "vendor_members_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "vendor_members_vendor_id_fkey"; columns: ["vendor_id"]; isOneToOne: false; referencedRelation: "vendors"; referencedColumns: ["id"] },
         ];
       };
       vendors: {
@@ -2768,6 +2954,10 @@ export type Database = {
         Args: { org_id: string };
         Returns: boolean;
       };
+      is_org_staff: {
+        Args: { org_id: string };
+        Returns: boolean;
+      };
       is_platform_super_admin: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
@@ -2780,15 +2970,7 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: string[];
       };
-      owns_property: {
-        Args: { p_property_id: string };
-        Returns: boolean;
-      };
-      owns_unit: {
-        Args: { p_unit_id: string };
-        Returns: boolean;
-      };
-      property_org: {
+      property_organisation: {
         Args: { p_property_id: string };
         Returns: string;
       };
@@ -2796,11 +2978,7 @@ export type Database = {
         Args: { instalment_id: string };
         Returns: undefined;
       };
-      tenant_occupies_unit: {
-        Args: { p_unit_id: string };
-        Returns: boolean;
-      };
-      unit_org: {
+      unit_organisation: {
         Args: { p_unit_id: string };
         Returns: string;
       };
@@ -2817,6 +2995,8 @@ export type Database = {
       lease_status: "draft" | "pending" | "active" | "expiring" | "renewal_offered" | "renewed" | "expired" | "terminated";
       maintenance_priority: "low" | "normal" | "high" | "emergency";
       maintenance_status: "submitted" | "reviewing" | "assigned" | "scheduled" | "in_progress" | "waiting" | "completed" | "closed" | "cancelled";
+      mandate_status: "draft" | "active" | "terminated";
+      mandate_type: "letting_only" | "management_only" | "letting_and_management";
       member_role_key: "platform_super_admin" | "org_owner" | "org_admin" | "property_manager" | "accountant" | "maintenance_manager" | "staff" | "property_owner" | "tenant" | "vendor";
       notification_channel: "in_app" | "email" | "whatsapp" | "sms";
       org_status: "trial" | "active" | "suspended" | "cancelled";
@@ -2825,6 +3005,10 @@ export type Database = {
       payment_status: "pending_verification" | "confirmed" | "rejected" | "refunded" | "failed";
       property_type: "residential" | "commercial" | "mixed_use" | "villa_compound" | "building" | "other";
       renewal_offer_status: "pending" | "accepted" | "declined" | "discussion_requested" | "expired";
+      undertaking_cap_period: "month" | "quarter" | "year" | "contract";
+      undertaking_cover: "rent" | "utilities" | "rent_and_utilities" | "part_of_rent";
+      undertaking_settlement: "employer_invoiced" | "employer_direct" | "tenant_reimbursed";
+      undertaking_status: "draft" | "active" | "revoked";
       unit_status: "vacant" | "occupied" | "reserved" | "maintenance" | "inactive";
     };
     CompositeTypes: Record<string, never>;
@@ -2845,6 +3029,8 @@ export type InvitationStatus = Database["public"]["Enums"]["invitation_status"];
 export type LeaseStatus = Database["public"]["Enums"]["lease_status"];
 export type MaintenancePriority = Database["public"]["Enums"]["maintenance_priority"];
 export type MaintenanceStatus = Database["public"]["Enums"]["maintenance_status"];
+export type MandateStatus = Database["public"]["Enums"]["mandate_status"];
+export type MandateType = Database["public"]["Enums"]["mandate_type"];
 export type MemberRoleKey = Database["public"]["Enums"]["member_role_key"];
 export type NotificationChannel = Database["public"]["Enums"]["notification_channel"];
 export type OrgStatus = Database["public"]["Enums"]["org_status"];
@@ -2853,6 +3039,10 @@ export type PaymentMethod = Database["public"]["Enums"]["payment_method"];
 export type PaymentStatus = Database["public"]["Enums"]["payment_status"];
 export type PropertyType = Database["public"]["Enums"]["property_type"];
 export type RenewalOfferStatus = Database["public"]["Enums"]["renewal_offer_status"];
+export type UndertakingCapPeriod = Database["public"]["Enums"]["undertaking_cap_period"];
+export type UndertakingCover = Database["public"]["Enums"]["undertaking_cover"];
+export type UndertakingSettlement = Database["public"]["Enums"]["undertaking_settlement"];
+export type UndertakingStatus = Database["public"]["Enums"]["undertaking_status"];
 export type UnitStatus = Database["public"]["Enums"]["unit_status"];
 
 /** The app imports payment_method under this name in two query files. */
