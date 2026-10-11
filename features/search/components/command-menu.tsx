@@ -28,14 +28,14 @@ interface QuickAction {
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: "Create tenant", href: "/tenants/new", icon: Users, keywords: "tenant new add create" },
-  { label: "Create lease", href: "/leases/new", icon: FileText, keywords: "lease new add create tenancy" },
-  { label: "Add property", href: "/properties/new", icon: Building2, keywords: "property new add create building" },
-  { label: "Add owner", href: "/owners/new", icon: UserRound, keywords: "owner new add create landlord" },
-  { label: "Record payment", href: "/finance/payments", icon: Receipt, keywords: "payment record money rent paid" },
+  { label: "Create tenant", href: "/tenants", icon: Users, keywords: "tenant new add create" },
+  { label: "Create lease", href: "/leases", icon: FileText, keywords: "lease new add create tenancy" },
+  { label: "Add property", href: "/properties", icon: Building2, keywords: "property new add create building" },
+  { label: "Add owner", href: "/owners", icon: UserRound, keywords: "owner new add create landlord" },
+  { label: "Record payment", href: "/payments", icon: Receipt, keywords: "payment record money rent paid" },
   { label: "View cheques", href: "/payments/cheques", icon: Landmark, keywords: "cheque bank post-dated" },
   { label: "Maintenance requests", href: "/maintenance", icon: Wrench, keywords: "maintenance repair job request" },
-  { label: "Outstanding rent", href: "/finance/outstanding", icon: Receipt, keywords: "arrears overdue outstanding debt" },
+  { label: "Outstanding rent", href: "/outstanding", icon: Receipt, keywords: "arrears overdue outstanding debt" },
 ];
 
 /**
@@ -58,18 +58,37 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
       )
     : QUICK_ACTIONS;
 
+  // Stale results from a previous term stay in state until the next query
+  // resolves, so what is shown is derived rather than cleared by an effect.
+  const visibleGroups = term.trim().length < 2 ? [] : groups;
+
   const flatResults = [
     ...filteredActions.map((a) => ({ kind: "action" as const, href: a.href, label: a.label })),
-    ...groups.flatMap((g) => g.results.map((r) => ({ kind: "result" as const, href: r.href, label: r.title }))),
+    ...visibleGroups.flatMap((g) =>
+      g.results.map((r) => ({ kind: "result" as const, href: r.href, label: r.title }))
+    ),
   ];
+
+  // Where each group's first row sits in the flat keyboard order, computed
+  // up front so no counter is mutated while the list renders.
+  const groupStart: number[] = [];
+  visibleGroups.reduce((n, g) => {
+    groupStart.push(n);
+    return n + g.results.length;
+  }, filteredActions.length);
+
+  // The highlight can outlive a shrinking result list, so clamp on read.
+  const highlighted = Math.min(activeIndex, Math.max(flatResults.length - 1, 0));
 
   // Debounced server search. requestId guards against a slow earlier query
   // overwriting the results of a later one.
+  //
+  // Nothing here calls setState synchronously: a short term simply renders
+  // no groups (see visibleGroups), the highlight resets in the change
+  // handler, and the whole menu is remounted on open by the Topbar rather
+  // than reset by an effect.
   useEffect(() => {
-    if (term.trim().length < 2) {
-      setGroups([]);
-      return;
-    }
+    if (term.trim().length < 2) return;
     const id = ++requestId.current;
     const timeout = setTimeout(() => {
       startTransition(async () => {
@@ -79,18 +98,6 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
     }, 220);
     return () => clearTimeout(timeout);
   }, [term]);
-
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [term, groups]);
-
-  useEffect(() => {
-    if (open) {
-      setTerm("");
-      setGroups([]);
-      setTimeout(() => inputRef.current?.focus(), 40);
-    }
-  }, [open]);
 
   const navigate = useCallback(
     (href: string) => {
@@ -103,18 +110,16 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
   function handleKeyDown(event: React.KeyboardEvent) {
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setActiveIndex((i) => Math.min(i + 1, flatResults.length - 1));
+      setActiveIndex(Math.min(highlighted + 1, flatResults.length - 1));
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setActiveIndex((i) => Math.max(i - 1, 0));
+      setActiveIndex(Math.max(highlighted - 1, 0));
     } else if (event.key === "Enter") {
       event.preventDefault();
-      const target = flatResults[activeIndex];
+      const target = flatResults[highlighted];
       if (target) navigate(target.href);
     }
   }
-
-  let runningIndex = -1;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -125,8 +130,12 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
           <Search className="h-4 w-4 shrink-0 text-neutral-400" />
           <input
             ref={inputRef}
+            autoFocus
             value={term}
-            onChange={(e) => setTerm(e.target.value)}
+            onChange={(e) => {
+              setTerm(e.target.value);
+              setActiveIndex(0);
+            }}
             onKeyDown={handleKeyDown}
             placeholder="Search tenants, units, leases, cheques…"
             aria-label="Search"
@@ -139,9 +148,8 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
           {filteredActions.length > 0 && (
             <div className="mb-1">
               <p className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-neutral-400">Actions</p>
-              {filteredActions.map((action) => {
-                runningIndex += 1;
-                const index = runningIndex;
+              {filteredActions.map((action, i) => {
+                const index = i;
                 return (
                   <button
                     key={action.href}
@@ -149,7 +157,7 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
                     onMouseEnter={() => setActiveIndex(index)}
                     className={cn(
                       "flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm transition-colors",
-                      index === activeIndex ? "bg-neutral-100 text-neutral-900" : "text-neutral-700"
+                      index === highlighted ? "bg-neutral-100 text-neutral-900" : "text-neutral-700"
                     )}
                   >
                     <action.icon className="h-4 w-4 text-neutral-400" />
@@ -161,16 +169,15 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
             </div>
           )}
 
-          {groups.map((group) => {
+          {visibleGroups.map((group, gi) => {
             const Icon = ENTITY_ICONS[group.entity];
             return (
               <div key={group.entity} className="mb-1">
                 <p className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-neutral-400">
                   {group.label}
                 </p>
-                {group.results.map((result) => {
-                  runningIndex += 1;
-                  const index = runningIndex;
+                {group.results.map((result, ri) => {
+                  const index = groupStart[gi] + ri;
                   return (
                     <button
                       key={result.id}
@@ -178,7 +185,7 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
                       onMouseEnter={() => setActiveIndex(index)}
                       className={cn(
                         "flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm transition-colors",
-                        index === activeIndex ? "bg-neutral-100" : ""
+                        index === highlighted ? "bg-neutral-100" : ""
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0 text-neutral-400" />
@@ -195,7 +202,7 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
             );
           })}
 
-          {term.trim().length >= 2 && !isPending && groups.length === 0 && filteredActions.length === 0 && (
+          {term.trim().length >= 2 && !isPending && visibleGroups.length === 0 && filteredActions.length === 0 && (
             <p className="px-2 py-8 text-center text-sm text-neutral-500">
               Nothing found for &ldquo;{term}&rdquo;.
             </p>

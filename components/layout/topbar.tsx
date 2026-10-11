@@ -1,14 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Search, Bell, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { initials } from "@/lib/utils/format";
 import { signOutAction } from "@/features/auth/actions";
+import { CommandMenu } from "@/features/search/components/command-menu";
 
 export function Topbar({ fullName }: { fullName: string }) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // The bar advertises ⌘K, so the shortcut has to exist. Ctrl+K covers
+  // Windows and Linux.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-neutral-200 bg-white px-4 md:px-6">
+      {/* Mounted only while open, so each visit starts with an empty box
+          instead of being reset by an effect. */}
+      {searchOpen && <CommandMenu open onOpenChange={setSearchOpen} />}
       <button
+        onClick={() => setSearchOpen(true)}
         className="flex h-9 max-w-md flex-1 items-center gap-2 rounded-[11px] border border-neutral-200 px-3 text-[13.5px] text-neutral-400 transition-colors hover:border-neutral-300"
         aria-label="Open command menu"
       >

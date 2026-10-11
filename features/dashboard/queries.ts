@@ -133,7 +133,7 @@ export async function getDashboardData(organisationId: string): Promise<Dashboar
   const urgentMaintenance = maintenance.filter((m) => m.priority === "emergency").length;
 
   const alerts = [
-    { label: "Overdue rent instalments", count: overdueInstalmentCount, href: "/finance/outstanding", tone: "danger" as const },
+    { label: "Overdue rent instalments", count: overdueInstalmentCount, href: "/outstanding", tone: "danger" as const },
     { label: "Bounced cheques", count: bouncedCheques, href: "/payments/cheques?status=bounced", tone: "danger" as const },
     { label: "Cheques due in 30 days", count: chequesDueSoon, href: "/payments/cheques", tone: "warning" as const },
     { label: "Leases expiring in 60 days", count: expiringWithin(in60), href: "/leases?expiring=60", tone: "warning" as const },

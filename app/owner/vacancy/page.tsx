@@ -48,7 +48,12 @@ export default async function OwnerVacancyPage() {
   const rows = units ?? [];
   // TODO: units has no vacant_since column, so this is measured from the
   // last state change. See the same note on the staff vacancy screen.
-  const days = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
+  // Read the clock once per request. This is a Server Component: it renders a
+  // single time per response, so there is no second render for the value to
+  // disagree with. react-hooks/purity cannot tell server from client.
+  // eslint-disable-next-line react-hooks/purity
+  const renderedAt = Date.now();
+  const days = (iso: string) => Math.max(0, Math.floor((renderedAt - new Date(iso).getTime()) / 86_400_000));
   const forgone = rows.reduce((s, u) => s + Math.round(((u.market_rent ?? 0) / 30) * days(u.updated_at)), 0);
 
   return (

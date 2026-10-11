@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -46,12 +46,16 @@ export function UnitFormDialog({
   const action = isEdit ? updateUnitAction.bind(null, initial!.id!) : createUnitAction;
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, IDLE_STATE);
 
+  // Close on a successful save. The effect reacts to a server-action result
+  // arriving, which is outside React's render, and guards on the identity of
+  // that result so a re-render cannot fire it twice.
+  const handled = useRef<FormState | null>(null);
   useEffect(() => {
-    if (state.status === "success") {
-      toast.success(state.message ?? "Saved.");
-      setOpen(false);
-      router.refresh();
-    }
+    if (state.status !== "success" || handled.current === state) return;
+    handled.current = state;
+    toast.success(state.message ?? "Saved.");
+    setOpen(false);
+    router.refresh();
   }, [state, router]);
 
   return (

@@ -35,8 +35,13 @@ export default async function VacancyPage() {
   // changed state. The prototype tracks a dedicated vacant_since column;
   // this schema has no such field, so the figure is an approximation.
   // TODO: add units.vacant_since and set it when a lease ends.
+  // Read the clock once per request. This is a Server Component: it renders
+  // a single time per response, so there is no second render for the value
+  // to disagree with. react-hooks/purity cannot tell server from client.
+  // eslint-disable-next-line react-hooks/purity
+  const renderedAt = Date.now();
   const daysEmpty = (iso: string) =>
-    Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
+    Math.max(0, Math.floor((renderedAt - new Date(iso).getTime()) / 86_400_000));
 
   const rentForgone = rows.reduce(
     (sum, u) => sum + Math.round(((u.market_rent ?? 0) / 30) * daysEmpty(u.updated_at)),

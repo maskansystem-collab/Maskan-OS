@@ -1,10 +1,15 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta.url)) });
+/**
+ * eslint-config-next 16 ships real flat configs, so they are imported
+ * directly. Routing them through FlatCompat (the eslint 8 shim) makes
+ * ESLint crash with "Converting circular structure to JSON" before it
+ * lints a single file — which silently meant `npm run lint` had been
+ * reporting nothing at all.
+ */
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
 export default [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextCoreWebVitals,
+  ...nextTypescript,
   { ignores: ["demo/**", ".next/**", "node_modules/**"] },
 ];
