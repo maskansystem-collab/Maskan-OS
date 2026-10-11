@@ -109,7 +109,7 @@ export async function getSubscription(organisationId: string): Promise<Subscript
     .from("organisation_subscriptions")
     .select(
       `id, status, trial_ends_at, current_period_end,
-       plans ( name, max_units, max_users, storage_mb, features )`
+       plans!inner ( name, max_units, max_users, storage_mb, features )`
     )
     .eq("organisation_id", organisationId)
     .maybeSingle();

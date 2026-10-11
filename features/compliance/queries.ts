@@ -68,9 +68,9 @@ export async function listCompliance(
     .select(
       `id, lease_code, start_date, end_date, monthly_rent, status,
        tenant_id, owner_id, property_id,
-       tenants ( full_name ),
-       properties ( name ),
-       units ( unit_number )`
+       tenants!inner ( name ),
+       properties!inner ( name ),
+       units!inner ( unit_number )`
     )
     .eq("organisation_id", organisationId)
     .in("status", TRACKED_STATUSES)
@@ -133,7 +133,7 @@ export async function listCompliance(
     return {
       leaseId: l.id,
       lease_code: l.lease_code,
-      tenant_name: tenant?.full_name ?? "—",
+      tenant_name: tenant?.name ?? "—",
       property_name: property?.name ?? "—",
       unit_number: unit?.unit_number ?? "—",
       start_date: l.start_date,
@@ -176,10 +176,10 @@ export async function getComplianceDetail(
     .select(
       `id, lease_code, start_date, end_date, monthly_rent, security_deposit, status,
        tenant_id, owner_id, property_id,
-       tenants ( full_name ),
+       tenants!inner ( name ),
        owners ( name ),
-       properties ( name ),
-       units ( unit_number )`
+       properties!inner ( name ),
+       units!inner ( unit_number )`
     )
     .eq("organisation_id", organisationId)
     .eq("id", leaseId)
@@ -250,7 +250,7 @@ export async function getComplianceDetail(
   return {
     leaseId: lease.id,
     lease_code: lease.lease_code,
-    tenant_name: tenant?.full_name ?? "—",
+    tenant_name: tenant?.name ?? "—",
     owner_name: owner?.name ?? null,
     property_name: property?.name ?? "—",
     unit_number: unit?.unit_number ?? "—",

@@ -62,6 +62,7 @@ const NAV: Section[] = [
     items: [
       { href: "/maintenance", label: "Maintenance" },
       { href: "/vendors", label: "Vendors" },
+      { href: "/documents", label: "Documents" },
       { href: "/import", label: "Import" },
     ] },
   {
