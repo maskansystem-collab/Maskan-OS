@@ -19,7 +19,7 @@ HOUSE = "M99 50.7 L48.6 0 L0 49.6 L0 133 L100 133"
 TEXT_X, TEXT_Y, TEXT_W, FONT_SIZE = 20, 104, 146, 52
 WORD = "MASKAN"
 
-font = TTFont(f"{FONTS}/Archivo-Bold.ttf")
+font = TTFont(f"{FONTS}/it/package/files/inter-tight-latin-600-normal.woff2")
 upem = font["head"].unitsPerEm
 gs = font.getGlyphSet()
 cmap = font.getBestCmap()

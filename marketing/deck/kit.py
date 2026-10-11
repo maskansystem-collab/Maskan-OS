@@ -1,18 +1,22 @@
 """
 Drawing kit for the Maskan OS deck.
 
-The measurements here are not invented: they were read back out of the
-existing Rent_OS_slide_deck with python-pptx, so the refreshed deck sits on
-exactly the same grid as the one it replaces. A 20in x 11.25in stage, a
-1.17in margin, and a four-column grid of 4.26in cards with a 0.21in gutter
-that adds up to the 17.67in content width.
+Design rules this encodes, and why:
 
-Typefaces are deliberately Arial and Courier New rather than the product's
-Archivo and Inter Tight. A .pptx carries no fonts: anything not installed on
-the machine that opens it is silently substituted, and the substitute
-reflows the slide. Arial and Courier New are present everywhere. The one
-place the real brand face appears is the logo, which is a PNG with the
-wordmark already converted to outlines, so it cannot be substituted at all.
+* **No borders and no shadows.** Surfaces separate by fill and by whitespace.
+  A bordered, drop-shadowed card is the single clearest tell of a 2010s
+  slide template, and it was the first thing to go.
+* **The product's own fonts.** Archivo for headings and figures, Inter Tight
+  for everything else -- the same split as app/globals.css, where Archivo is
+  display-only and never sets body copy. The deck and the signed-in product
+  should look like one company.
+* **Generous margins.** 1.6in rather than the old 1.17in, and far fewer
+  elements per slide. Air is the main design material here.
+* **One accent.** Lime appears at most once per slide, usually not at all.
+  Colour otherwise carries meaning only in data.
+
+Both fonts are embedded into the .pptx at build time, so the deck renders
+correctly on a machine that has neither installed.
 """
 
 from pptx import Presentation
@@ -20,110 +24,105 @@ from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
-from pptx.oxml.ns import qn
-import copy
 from pathlib import Path
 
-# --- palette, straight from app/globals.css --------------------------------
+# --- palette ---------------------------------------------------------------
 INK = RGBColor(0x17, 0x01, 0x00)
-INK_SOFT = RGBColor(0x33, 0x20, 0x1C)
+INK_SOFT = RGBColor(0x2B, 0x15, 0x12)
 PAPER = RGBColor(0xFB, 0xF9, 0xF8)
 WHITE = RGBColor(0xFF, 0xFF, 0xFF)
-SURFACE = RGBColor(0xF7, 0xF3, 0xF1)
-BORDER = RGBColor(0xEA, 0xE4, 0xE2)
-MUTED = RGBColor(0xA6, 0x98, 0x94)
+SURFACE = RGBColor(0xF4, 0xF0, 0xEE)
+HAIRLINE = RGBColor(0xEA, 0xE4, 0xE2)
 BODY = RGBColor(0x5C, 0x4A, 0x46)
-DIM = RGBColor(0x8B, 0x7F, 0x7C)
-DIM2 = RGBColor(0xC9, 0xBD, 0xBA)
+MUTED = RGBColor(0xA6, 0x98, 0x94)
+ON_INK = RGBColor(0xC9, 0xBD, 0xBA)
+ON_INK_DIM = RGBColor(0x8B, 0x7F, 0x7C)
 LIME = RGBColor(0xC6, 0xF2, 0x4E)
-LIME_PALE = RGBColor(0xED, 0xFB, 0xC4)
-LIME_DARK = RGBColor(0x3F, 0x4A, 0x18)
 GREEN = RGBColor(0x0F, 0x8A, 0x5F)
-GREEN_PALE = RGBColor(0xE9, 0xFA, 0xF2)
 AMBER = RGBColor(0xB4, 0x53, 0x09)
-AMBER_PALE = RGBColor(0xFF, 0xFB, 0xEB)
 RED = RGBColor(0xB9, 0x1C, 0x1C)
-RED_PALE = RGBColor(0xFE, 0xF2, 0xF2)
-BLUE = RGBColor(0x03, 0x69, 0xA1)
-BLUE_PALE = RGBColor(0xF0, 0xF9, 0xFF)
 
-# --- grid ------------------------------------------------------------------
+# --- stage and grid --------------------------------------------------------
 W, H = 20.0, 11.25
-M = 1.17                      # page margin
-CW = 17.67                    # content width
-COL = 4.26                    # card width in the four-up grid
-GUT = 0.21                    # gutter
+M = 1.60                       # page margin
+CW = W - 2 * M                 # 16.80in of content
 
-SANS = "Arial"
-MONO = "Courier New"
+DISPLAY = "Archivo"            # headings and figures only
+TEXT = "Inter Tight"           # everything else
 
-LOGO = str(Path(__file__).parent / "assets" / "logo")
+# --- type scale ------------------------------------------------------------
+EYEBROW = 16
+H1 = 72
+H2 = 44
+H3 = 28
+LEAD = 27                      # opening paragraph
+BODY_SZ = 21
+SMALL = 18
+LABEL = 15
+FIG = 52
+FIG_XL = 128
+
+ASSETS = Path(__file__).parent
 
 
-def col_x(i: int, span: int = 1) -> tuple[float, float]:
-    """Left edge and width of `span` columns starting at column `i`."""
-    return M + i * (COL + GUT), span * COL + (span - 1) * GUT
+def col(n, gap=0.5):
+    """Width and left edges for n equal columns across the content width."""
+    w = (CW - gap * (n - 1)) / n
+    return w, [M + i * (w + gap) for i in range(n)]
 
 
-def grid(n: int, gutter: float = GUT) -> tuple[float, list[float]]:
-    """Width and left edges for `n` equal columns spanning the content width."""
-    w = (CW - gutter * (n - 1)) / n
-    return w, [M + i * (w + gutter) for i in range(n)]
-
-
-def new_deck() -> Presentation:
+def new_deck():
     prs = Presentation()
     prs.slide_width = Inches(W)
     prs.slide_height = Inches(H)
     return prs
 
 
-def slide(prs: Presentation, bg=PAPER):
-    s = prs.slides.add_slide(prs.slide_layouts[6])   # blank
-    bgfill = s.background.fill
-    bgfill.solid()
-    bgfill.fore_color.rgb = bg
+def slide(prs, bg=PAPER):
+    s = prs.slides.add_slide(prs.slide_layouts[6])
+    f = s.background.fill
+    f.solid()
+    f.fore_color.rgb = bg
     return s
 
 
 # --- primitives ------------------------------------------------------------
 
-def _tx(s, l, t, w, h):
+def _spacing(run, hundredths):
+    run.font._rPr.set("spc", str(hundredths))
+
+
+def text(s, l, t, w, h, body, *, font=TEXT, size=BODY_SZ, color=BODY,
+         bold=False, align=PP_ALIGN.LEFT, track=None, line=None,
+         anchor=MSO_ANCHOR.TOP, after=0):
+    """A text box.
+
+    `body` is a string (newlines become paragraphs), or a list of paragraphs,
+    where a paragraph may itself be a list of (text, overrides) runs.
+    """
     box = s.shapes.add_textbox(Inches(l), Inches(t), Inches(w), Inches(h))
     tf = box.text_frame
     tf.word_wrap = True
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-    return box, tf
-
-
-def _set_spacing(run, hundredths: int):
-    """Letter-spacing, which python-pptx does not expose."""
-    run.font._rPr.set("spc", str(hundredths))
-
-
-def text(s, l, t, w, h, body, *, font=SANS, size=24, color=BODY, bold=False,
-         align=PP_ALIGN.LEFT, spacing=None, line=None, anchor=MSO_ANCHOR.TOP,
-         space_after=0):
-    """A text box. `body` may be a string or a list of (text, overrides) runs."""
-    box, tf = _tx(s, l, t, w, h)
     tf.vertical_anchor = anchor
-    lines = body if isinstance(body, list) else [body]
-    # A literal newline inside a run does nothing in DrawingML; each line has
-    # to become its own paragraph or it silently runs on and overflows.
-    expanded = []
-    for item in lines:
-        if isinstance(item, str) and "\n" in item:
-            expanded.extend(item.split("\n"))
+
+    paras = body if isinstance(body, list) else [body]
+    flat = []
+    for p in paras:
+        # A literal newline inside a run does nothing in DrawingML; each line
+        # has to become its own paragraph or it silently runs on and overflows.
+        if isinstance(p, str) and "\n" in p:
+            flat.extend(p.split("\n"))
         else:
-            expanded.append(item)
-    lines = expanded
-    for i, item in enumerate(lines):
+            flat.append(p)
+
+    for i, item in enumerate(flat):
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         p.alignment = align
         if line:
             p.line_spacing = line
-        if space_after:
-            p.space_after = Pt(space_after)
+        if after:
+            p.space_after = Pt(after)
         runs = item if isinstance(item, list) else [(item, {})]
         for txt, over in runs:
             r = p.add_run()
@@ -133,200 +132,144 @@ def text(s, l, t, w, h, body, *, font=SANS, size=24, color=BODY, bold=False,
             f.size = Pt(over.get("size", size))
             f.bold = over.get("bold", bold)
             f.color.rgb = over.get("color", color)
-            sp = over.get("spacing", spacing)
-            if sp:
-                _set_spacing(r, sp)
+            tr = over.get("track", track)
+            if tr:
+                _spacing(r, tr)
     return box
 
 
-def rect(s, l, t, w, h, *, fill=WHITE, line=BORDER, lw=1.0, radius=None):
+def block(s, l, t, w, h, *, fill=WHITE, radius=None):
+    """A flat surface. No outline, no shadow -- deliberately."""
     shape = s.shapes.add_shape(
         MSO_SHAPE.ROUNDED_RECTANGLE if radius else MSO_SHAPE.RECTANGLE,
         Inches(l), Inches(t), Inches(w), Inches(h))
     if radius:
-        # adjustment is the corner radius as a fraction of the shorter side
         shape.adjustments[0] = min(0.5, radius / min(w, h))
-    if fill is None:
-        shape.fill.background()
-    else:
-        shape.fill.solid()
-        shape.fill.fore_color.rgb = fill
-    if line is None:
-        shape.line.fill.background()
-    else:
-        shape.line.color.rgb = line
-        shape.line.width = Pt(lw)
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = fill
+    shape.line.fill.background()
     shape.shadow.inherit = False
-    if shape.has_text_frame:
-        shape.text_frame.text = ""
     return shape
 
 
+def rule(s, l, t, w, *, color=HAIRLINE, weight=0.008):
+    return block(s, l, t, w, weight, fill=color)
+
+
+def picture(s, name, l, t, w, h=None, *, align="center"):
+    """A product mockup, scaled to fit inside the given box.
+
+    Passing only a width is how the first build put four screenshots off the
+    bottom of the stage: a 1.6:1 screenshot 14in wide is 8.8in tall, and
+    nothing in PowerPoint complains. Giving a height makes the box authoritative
+    and the image is fitted inside it, which cannot overflow.
+    """
+    from PIL import Image
+    path = ASSETS / "mock" / f"{name}.png"
+    iw, ih = Image.open(path).size
+    aspect = ih / iw
+    if h is None:
+        dw, dh = w, w * aspect
+    else:
+        dw, dh = (w, w * aspect) if w * aspect <= h else (h / aspect, h)
+    x = l + (w - dw) / 2 if align == "center" else l
+    return s.shapes.add_picture(str(path), Inches(x), Inches(t),
+                                width=Inches(dw), height=Inches(dh))
+
+
 def logo(s, l, t, w, variant="ink"):
-    """The full lockup. Aspect is fixed by the artwork at 174:143."""
-    return s.shapes.add_picture(f"{LOGO}-{variant}.png", Inches(l), Inches(t),
+    return s.shapes.add_picture(str(ASSETS / f"logo-{variant}.png"),
+                                Inches(l), Inches(t),
                                 width=Inches(w), height=Inches(w * 143 / 174))
-
-
-def mark(s, l, t, w, variant="faint"):
-    """The house alone. Aspect 108:142."""
-    return s.shapes.add_picture(f"{LOGO}-mark-{variant}.png", Inches(l), Inches(t),
-                                width=Inches(w), height=Inches(w * 142 / 108))
 
 
 # --- composed blocks -------------------------------------------------------
 
-def eyebrow(s, label, *, color=MUTED, top=0.96):
-    return text(s, M, top, CW, 0.42, label, font=MONO, size=22.5,
-                color=color, spacing=150)
+def eyebrow(s, label, *, color=MUTED, top=1.15):
+    return text(s, M, top, CW, 0.34, label.upper(), font=TEXT, size=EYEBROW,
+                color=color, track=220, bold=True)
 
 
-def headline(s, title, *, size=66, top=2.35, color=INK, dot=True, width=CW,
-             left=M, line=1.04):
-    """A headline with the lime full stop the deck uses as its signature.
-
-    Explicit line breaks become separate paragraphs, and the full stop is
-    appended to the last of them so it always trails the final word.
-    """
-    parts = title.split("\n")
-    paras = [[(p, {})] for p in parts]
-    if dot:
-        paras[-1].append((".", {"color": LIME}))
-    height = len(parts) * size / 72 * line + 0.4
-    return text(s, left, top, width, height, paras, font=SANS, size=size,
-                color=color, bold=True, line=line)
+def headline(s, title, *, size=H1, top=2.05, color=INK, width=CW, left=M,
+             line=1.00, align=PP_ALIGN.LEFT):
+    n = len(title.split("\n"))
+    return text(s, left, top, width, n * size / 72 * line + 0.5, title,
+                font=DISPLAY, size=size, color=color, bold=True, line=line,
+                align=align)
 
 
-def label_row(s, left, top, width, labels, *, size=23.25, color=INK,
-              font=SANS, h=0.42):
-    """Labels spread evenly across a width.
-
-    Measuring a string by multiplying its length by an average character
-    width is what overflowed the first build: one long label pushed every
-    label after it off the slide. Even columns cannot overflow.
-    """
-    n = len(labels)
-    cw = width / n
-    for i, label in enumerate(labels):
-        text(s, left + i * cw, top, cw - 0.12, h, label, font=font, size=size,
-             color=color)
-    return top + h
+def head(s, label, title, *, size=H1, dark=False, top=2.05, width=CW):
+    """Eyebrow plus headline: the opening of a content slide."""
+    eyebrow(s, label, color=ON_INK_DIM if dark else MUTED)
+    headline(s, title, size=size, top=top, width=width,
+             color=PAPER if dark else INK)
 
 
-def head(s, number, label, title, *, size=66, dark=False, dot=True):
-    """Eyebrow plus headline — the opening of nearly every content slide."""
-    eyebrow(s, f"{number} — {label}", color=DIM if dark else MUTED)
-    headline(s, title, size=size, color=PAPER if dark else INK, dot=dot)
+def lede(s, body, *, top, width=11.0, color=BODY, size=LEAD, left=M):
+    return text(s, left, top, width, 2.0, body, size=size, color=color,
+                line=1.40)
 
 
-def card(s, l, t, w, h, *, fill=WHITE, line=BORDER, radius=0.14):
-    return rect(s, l, t, w, h, fill=fill, line=line, radius=radius)
+def figure(s, l, t, w, value, label, *, size=FIG, color=INK,
+           label_color=MUTED, align=PP_ALIGN.LEFT):
+    """A large number over a small label. No card around it."""
+    text(s, l, t, w, size / 72 * 1.2, value, font=DISPLAY, size=size,
+         color=color, bold=True, align=align, line=1.0)
+    text(s, l, t + size / 72 * 1.15 + 0.10, w, 0.60, label, font=TEXT,
+         size=SMALL, color=label_color, align=align, line=1.30)
 
 
-def stat(s, l, t, w, label, value, caption, *, h=2.50, value_color=INK,
-         fill=WHITE, line=BORDER, bar=None):
-    """A labelled figure card: mono label, mono figure, small caption."""
-    card(s, l, t, w, h, fill=fill, line=line)
-    pad = 0.36
-    text(s, l + pad, t + pad, w - 2 * pad, 0.38, label, font=MONO, size=20.25,
-         color=MUTED, spacing=120)
-    text(s, l + pad, t + pad + 0.49, w - 2 * pad, 0.62, value, font=MONO,
-         size=33, color=value_color, bold=True)
-    text(s, l + pad, t + pad + 1.22, w - 2 * pad, 0.34, caption, font=SANS,
-         size=19.5, color=BODY)
-    if bar is not None:
-        track = w - 2 * pad
-        rect(s, l + pad, t + h - 0.56, track, 0.06, fill=BORDER, line=None)
-        rect(s, l + pad, t + h - 0.56, track * bar, 0.06, fill=LIME, line=None)
-
-
-# Arial's average advance for mixed-case text, in inches per character per
-# point. Measured generously on purpose: a chip that is slightly too wide
-# looks fine, one that is slightly too narrow wraps its last letter onto a
-# second line and spills out of the shape.
-CHAR_W = 0.0098
-
-
-def _pill_w(label: str, size: float, padx: float) -> float:
-    return len(label) * size * CHAR_W + padx * 2
-
-
-def pill(s, l, t, label, *, size=21, fill=WHITE, line=BORDER, color=BODY,
-         padx=0.26, h=0.55):
-    """A rounded chip sized to its label. Returns the width it consumed."""
-    w = _pill_w(label, size, padx)
-    rect(s, l, t, w, h, fill=fill, line=line, radius=h / 2)
-    # The inner box is given the full chip width less a hair, not the width
-    # minus both paddings, so a slightly wide glyph cannot force a wrap.
-    text(s, l + padx, t + (h - 0.37) / 2 + 0.02, w - padx - 0.06, 0.37, label,
-         font=SANS, size=size, color=color)
-    return w
-
-
-def pill_row(s, left, top, labels, *, maxw=CW, gap=0.16, rowgap=0.12, **kw):
-    """Chips flowed over as many rows as they need."""
-    size, padx = kw.get("size", 21), kw.get("padx", 0.26)
-    x, y = left, top
-    for label in labels:
-        w = _pill_w(label, size, padx)
-        if x > left and x + w > left + maxw:
-            x, y = left, y + 0.55 + rowgap
-        pill(s, x, y, label, **kw)
-        x += w + gap
-    return y + 0.55
-
-
-def rule(s, l, t, w, *, color=BORDER, weight=0.012):
-    return rect(s, l, t, w, weight, fill=color, line=None)
-
-
-def note(s, l, t, w, h, label, body, *, fill=LIME_PALE, label_color=LIME_DARK,
-         body_color=INK, size=21):
-    """The pale callout box used for asides."""
-    card(s, l, t, w, h, fill=fill, line=None)
-    pad = 0.34
-    text(s, l + pad, t + pad, w - 2 * pad, 0.34, label, font=MONO, size=18.75,
-         color=label_color, spacing=140)
-    text(s, l + pad, t + pad + 0.46, w - 2 * pad, h - pad * 2 - 0.46, body,
-         font=SANS, size=size, color=body_color, line=1.26)
-
-
-def arrow_chain(s, left, top, items, *, size=22.5, gap=0.30, color=INK,
-                arrow_color=MUTED):
-    """Owner → Property → Building → … laid out on one line."""
-    x = left
+def listing(s, l, t, w, items, *, size=BODY_SZ, color=INK, gap=0.62,
+            dividers=True, divider_color=HAIRLINE):
+    """A list separated by hairlines rather than boxed into cards."""
+    y = t
     for i, item in enumerate(items):
-        w = len(item) * size * CHAR_W
-        text(s, x, top, w + 0.1, 0.42, item, font=SANS, size=size, color=color,
-             bold=True)
-        x += w + gap
-        if i < len(items) - 1:
-            text(s, x, top, 0.3, 0.42, "→", font=SANS, size=size,
-                 color=arrow_color)
-            x += 0.3 + gap
-    return x
+        text(s, l, y, w, gap - 0.14, item, size=size, color=color)
+        y += gap
+        if dividers and i < len(items) - 1:
+            rule(s, l, y - 0.16, w, color=divider_color)
+    return y
 
 
-def numbered(s, l, t, w, num, title, body, *, h=1.9, fill=WHITE, line=BORDER,
-             num_color=LIME_DARK, num_bg=LIME_PALE):
-    """A numbered step card."""
-    card(s, l, t, w, h, fill=fill, line=line)
-    pad = 0.32
-    rect(s, l + pad, t + pad, 0.52, 0.52, fill=num_bg, line=None, radius=0.14)
-    text(s, l + pad, t + pad + 0.10, 0.52, 0.34, num, font=MONO, size=19.5,
-         color=num_color, bold=True, align=PP_ALIGN.CENTER)
-    text(s, l + pad + 0.72, t + pad + 0.06, w - pad * 2 - 0.72, 0.40, title,
-         font=SANS, size=23.25, color=INK, bold=True)
-    if body:
-        text(s, l + pad, t + pad + 0.78, w - pad * 2, h - pad * 2 - 0.78, body,
-             font=SANS, size=19.5, color=BODY, line=1.24)
+def pairs(s, l, t, w, rows, *, size=BODY_SZ, gap=0.66, key_w=None,
+          key_color=BODY, val_color=INK, val_font=None, dark=False,
+          dividers=True):
+    """Label on the left, value right-aligned. The deck's table primitive."""
+    kw = key_w or w * 0.58
+    y = t
+    for i, (k, v, *rest) in enumerate(rows):
+        vc = rest[0] if rest else val_color
+        text(s, l, y, kw, gap - 0.16, k, size=size,
+             color=ON_INK if dark else key_color)
+        text(s, l + kw, y, w - kw, gap - 0.16, v, size=size,
+             font=val_font or TEXT, color=vc, bold=True, align=PP_ALIGN.RIGHT)
+        y += gap
+        if dividers and i < len(rows) - 1:
+            rule(s, l, y - 0.18, w,
+                 color=INK_SOFT if dark else HAIRLINE)
+    return y
 
 
-def corner(s, dark=False):
-    """The quiet house mark that runs on every content slide.
+def steps(s, l, t, w, items, *, cols=4, gap=0.5, rowgap=1.70, size=BODY_SZ):
+    """Numbered steps with no card chrome -- a rule, a number, a line."""
+    cw = (w - gap * (cols - 1)) / cols
+    for i, label in enumerate(items):
+        x = l + (i % cols) * (cw + gap)
+        y = t + (i // cols) * rowgap
+        rule(s, x, y, cw, color=INK)
+        text(s, x, y + 0.24, cw, 0.34, f"{i + 1:02d}", font=DISPLAY,
+             size=LABEL, color=MUTED, bold=True, track=80)
+        text(s, x, y + 0.68, cw, 0.90, label, size=size, color=INK, line=1.26)
 
-    It sits in the header band beside the eyebrow rather than the footer: the
-    footer is where the dark summary cards land, and the mark was printing on
-    top of them.
-    """
-    mark(s, W - M - 0.30, 0.90, 0.30, "dimdark" if dark else "faint")
+
+def caption(s, body, *, top, color=MUTED, size=SMALL, width=CW, left=M,
+            align=PP_ALIGN.LEFT):
+    return text(s, left, top, width, 0.50, body, size=size, color=color,
+                align=align, line=1.35)
+
+
+def page_mark(s, n, *, dark=False):
+    """A quiet slide number. The only furniture on a content slide."""
+    text(s, W - M - 1.2, H - 0.92, 1.2, 0.34, f"{n:02d}", font=TEXT,
+         size=LABEL, color=ON_INK_DIM if dark else MUTED,
+         align=PP_ALIGN.RIGHT, track=100)

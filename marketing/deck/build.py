@@ -1,23 +1,101 @@
-"""Build the Maskan OS deck."""
+"""Build the Maskan OS deck, with the brand fonts embedded."""
 
-import sys
+import sys, shutil, zipfile, re
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent))
 
-from kit import new_deck
-import slides_a as a
-import slides_b as b
+HERE = Path(__file__).parent
+sys.path.insert(0, str(HERE))
 
-OUT = str(Path(__file__).parent / "Maskan-OS-deck.pptx")
+from kit import new_deck                       # noqa: E402
+import slides_a as a                           # noqa: E402
+import slides_b as b                           # noqa: E402
+
+OUT = HERE / "Maskan-OS-deck.pptx"
 
 BUILDERS = [
-    a.s01_title, a.s02_problem, a.s03_idea, a.s04_owner_sees, a.s05_rent,
-    a.s06_payments, a.s07_statements, a.s08_maintenance, a.s09_leases,
-    a.s10_compliance, a.s11_roles, a.s12_manager,
-    b.s13_owner_portal, b.s14_tenant_portal, b.s15_ownership, b.s16_migration,
-    b.s17_built, b.s18_plans, b.s19_why_now, b.s20_scope, b.s21_roadmap,
-    b.s22_pilot, b.s23_next, b.s24_close,
+    a.s01_title, a.s02_problem, a.s03_nine_places, a.s04_idea,
+    a.s05_dashboard, a.s06_rent, a.s07_cheques, a.s08_statements,
+    a.s09_maintenance, a.s10_leases, a.s11_compliance, a.s12_roles,
+    b.s13_manager, b.s14_owner_portal, b.s15_tenant_portal, b.s16_ownership,
+    b.s17_migration, b.s18_built, b.s19_plans, b.s20_why_now, b.s21_scope,
+    b.s22_roadmap, b.s23_pilot, b.s24_close,
 ]
+
+# family -> (regular.ttf, bold.ttf)
+FONTS = {
+    "Archivo": ("Archivo-Regular.ttf", "Archivo-Bold.ttf"),
+    "Inter Tight": ("InterTight-Regular.ttf", "InterTight-Bold.ttf"),
+}
+FONT_DIR = HERE / "fonts" / "fam"
+
+
+def embed_fonts(pptx: Path):
+    """Embed the brand fonts into the package.
+
+    A .pptx carries no fonts of its own: anything not installed on the machine
+    that opens it is silently substituted, and the substitute reflows every
+    slide. Embedding ships the outlines inside the file so Archivo and Inter
+    Tight render on a machine that has never seen them.
+
+    PowerPoint reads these from /ppt/fonts/fontN.fntdata, declared in
+    presentation.xml as <p:embeddedFontLst>. The parts are raw TrueType.
+    """
+    tmp = pptx.with_suffix(".tmp.pptx")
+    with zipfile.ZipFile(pptx) as zin, \
+         zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zout:
+        names = zin.namelist()
+        idx, entries, rels = 1, [], []
+        for family, (reg, bold) in FONTS.items():
+            parts = []
+            for style, fn in (("regular", reg), ("bold", bold)):
+                data = (FONT_DIR / fn).read_bytes()
+                part = f"ppt/fonts/font{idx}.fntdata"
+                rid = f"rIdFont{idx}"
+                zout.writestr(part, data)
+                rels.append((rid, f"fonts/font{idx}.fntdata"))
+                parts.append((style, rid))
+                idx += 1
+            entries.append((family, parts))
+
+        for n in names:
+            data = zin.read(n)
+            if n == "ppt/presentation.xml":
+                xml = data.decode("utf-8")
+                lst = ["<p:embeddedFontLst>"]
+                for family, parts in entries:
+                    lst.append(
+                        f'<p:embeddedFont><p:font typeface="{family}" '
+                        f'pitchFamily="34" charset="0"/>')
+                    for style, rid in parts:
+                        lst.append(f'<p:{style} r:id="{rid}"/>')
+                    lst.append("</p:embeddedFont>")
+                lst.append("</p:embeddedFontLst>")
+                block = "".join(lst)
+                # embeddedFontLst must precede sldSz in the schema's sequence
+                xml = xml.replace("<p:sldSz", block + "<p:sldSz", 1)
+                data = xml.encode("utf-8")
+            elif n == "ppt/_rels/presentation.xml.rels":
+                xml = data.decode("utf-8")
+                add = "".join(
+                    f'<Relationship Id="{rid}" Type="http://schemas.openxmlformats.org'
+                    f'/officeDocument/2006/relationships/font" Target="{tgt}"/>'
+                    for rid, tgt in rels)
+                xml = xml.replace("</Relationships>", add + "</Relationships>")
+                data = xml.encode("utf-8")
+            elif n == "[Content_Types].xml":
+                xml = data.decode("utf-8")
+                if "fntdata" not in xml:
+                    xml = xml.replace(
+                        "<Types ",
+                        "<Types ", 1).replace(
+                        "</Types>",
+                        '<Default Extension="fntdata" ContentType='
+                        '"application/x-fontdata"/></Types>')
+                data = xml.encode("utf-8")
+            zout.writestr(n, data)
+
+    shutil.move(tmp, pptx)
+    return idx - 1
 
 
 def main():
@@ -25,8 +103,10 @@ def main():
     for i, fn in enumerate(BUILDERS, 1):
         fn(prs)
         print(f"  {i:2d}  {fn.__name__}")
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     prs.save(OUT)
-    print(f"\n{len(BUILDERS)} slides -> {OUT}")
+    n = embed_fonts(OUT)
+    print(f"\n{len(BUILDERS)} slides, {n} font faces embedded -> {OUT}")
 
 
 if __name__ == "__main__":

@@ -1,405 +1,302 @@
-"""Slides 1-12: the pitch, the product walkthrough, and the manager workspace."""
+"""Slides 1-12: the problem, the idea, and the product itself."""
 
 from kit import *
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.text import PP_ALIGN
 
 
 def s01_title(prs):
     s = slide(prs, INK)
-    # The dark field stops short of the right edge; the ledger graphic sits beyond it.
-    rect(s, 10.9, 0, W - 10.9, H, fill=INK_SOFT, line=None)
-
-    logo(s, M, 0.92, 2.9, "paper")
-    headline(s, "Your entire\nrental portfolio.\nOne place", size=82, top=3.00,
-             color=PAPER, width=9.4, line=1.02)
-    text(s, M, 7.30, 7.4,
-         1.9,
-         "A rental operating system for Qatar. Owners, managers, tenants, "
-         "leases, cheques and reporting in one connected place.",
-         size=25.5, color=DIM2, line=1.42)
-    text(s, M, 9.75, 7.0, 0.42, "DOHA  ·  2026", font=MONO, size=21,
-         color=DIM, spacing=250)
-
-    # An abstract ledger: rows of figures, some settled, some outstanding.
-    rows = [(0.00, 6.10, False), (0.14, 4.95, False), (0.07, 3.60, False),
-            (0.28, 6.70, True), (0.03, 4.20, False), (0.17, 2.95, False),
-            (0.31, 6.35, True), (0.11, 3.85, False), (0.22, 5.40, False),
-            (0.05, 4.60, False), (0.36, 2.40, True), (0.19, 4.05, False),
-            (0.08, 3.10, False)]
-    y = 2.95
-    rule(s, 11.6, y - 0.42, 7.5, color=LIME_DARK, weight=0.03)
-    for dx, w, hot in rows:
-        rect(s, 11.6 + dx, y, w, 0.105, fill=LIME if hot else RGBColor(0x4A, 0x33, 0x2E),
-             line=None)
-        y += 0.46
+    logo(s, M, 1.30, 2.70, "paper")
+    headline(s, "Your entire rental\nportfolio. One place.",
+             size=92, top=3.70, color=PAPER, width=14.0, line=1.02)
+    lede(s, "A rental operating system for Qatar. Owners, managers, tenants, "
+            "leases, cheques and reporting in one connected place.",
+         top=7.55, width=11.5, color=ON_INK, size=26)
+    text(s, M, 9.70, 10.0, 0.40, "DOHA · 2026", size=LABEL, color=ON_INK_DIM,
+         track=260, bold=True)
     return s
 
 
 def s02_problem(prs):
     s = slide(prs)
-    head(s, "01", "THE PROBLEM", "Owning property is simple.\nManaging it is not",
-         size=78)
-    text(s, M, 5.21, 6.49, 1.04,
-         "As a portfolio grows, one tenancy is recorded in nine different places.",
-         size=24, color=BODY, line=1.30)
-    pill_row(s, M, 6.46,
-             ["Spreadsheets", "WhatsApp threads", "Email", "Bank statements",
-              "Post-dated cheques", "Paper contracts", "Contractors",
-              "Accountants", "Property managers"],
-             maxw=8.0)
-
-    card(s, 10.17, 5.21, 8.67, 5.12, fill=INK, line=None, radius=0.18)
-    text(s, 10.67, 5.67, 8.43, 0.38, "SO THE OWNER HAS TO ASK", font=MONO,
-         size=20.25, color=LIME, spacing=150)
-    qs = ["Has the rent been paid", "Who is overdue", "Which lease expires next",
-          "Why QAR 3,500 was deducted", "Whether the repair was finished",
-          "How much is coming this month"]
-    for i, q in enumerate(qs):
-        text(s, 10.67, 6.22 + i * 0.645, 8.43, 0.48, q, size=23.25, color=PAPER)
-    corner(s)
+    eyebrow(s, "01 — The problem")
+    headline(s, "Owning property is simple.\nManaging it is not.",
+             size=84, top=3.30, line=1.04)
+    lede(s, "As a portfolio grows, one tenancy ends up recorded in nine "
+            "different places — and none of them agree.",
+         top=7.40, width=13.0)
+    page_mark(s, 2)
     return s
 
 
-def s03_idea(prs):
+def s03_nine_places(prs):
     s = slide(prs)
-    head(s, "02", "THE IDEA", "Every event attached to the same record",
-         size=60)
+    eyebrow(s, "01 — The problem")
+    headline(s, "Nine places, one tenancy", size=H2, top=1.90)
 
-    # Ten links will not fit on one line at a readable size, so the chain
-    # wraps at the point where the record stops being a thing and starts
-    # being money.
-    card(s, M, 4.52, CW, 2.00, fill=WHITE, line=BORDER)
-    arrow_chain(s, M + 0.46, 4.86,
-                ["Owner", "Property", "Building", "Unit", "Tenant"], size=22.5)
-    arrow_chain(s, M + 0.46, 5.62,
-                ["Lease", "Rent", "Maintenance", "Expenses", "Owner payout"],
-                size=22.5)
+    places = ["Spreadsheets", "WhatsApp threads", "Email",
+              "Bank statements", "Post-dated cheques", "Paper contracts",
+              "Contractors", "Accountants", "Property managers"]
+    w, xs = col(3, gap=0.9)
+    for i, place in enumerate(places):
+        x = xs[i % 3]
+        y = 3.60 + (i // 3) * 1.52
+        rule(s, x, y, w, color=INK)
+        text(s, x, y + 0.30, w, 0.60, place, size=26, color=INK)
 
-    w, xs = grid(3)
-    items = [("Handled", "The system holds the state, not a person's memory."),
-             ("Accounted for", "Every figure traces to a lease, a payment and a date."),
-             ("Local", "QAR, Qatari lease terms, cheque cycles, Doha districts.")]
-    for x, (title, body) in zip(xs, items):
-        card(s, x, 6.75, w, 2.55)
-        text(s, x + 0.40, 7.12, w - 0.8, 0.46, title, size=28, color=INK, bold=True)
-        text(s, x + 0.40, 7.78, w - 0.8, 1.3, body, size=21.75, color=BODY, line=1.32)
-    corner(s)
+    rule(s, M, 8.70, CW)
+    text(s, M, 9.10, CW, 0.70,
+         "So the owner has to ask: has the rent been paid, who is overdue, "
+         "which lease expires next, why QAR 3,500 was deducted, whether the "
+         "repair was finished.",
+         size=23, color=BODY, line=1.40)
+    page_mark(s, 3)
     return s
 
 
-def s04_owner_sees(prs):
-    s = slide(prs)
-    head(s, "03", "WHAT THE OWNER SEES", "The portfolio, in one screen")
+def s04_idea(prs):
+    s = slide(prs, INK)
+    eyebrow(s, "02 — The idea", color=ON_INK_DIM)
+    headline(s, "Every event attached\nto the same record.",
+             size=80, top=2.90, color=PAPER, line=1.04)
 
-    top = 4.48
-    stat(s, col_x(0)[0], top, COL, "UNITS", "48", "44 occupied · 4 vacant",
-         bar=0.917)
-    stat(s, col_x(1)[0], top, COL, "RENT DUE · AUG", "QAR 386,000",
-         "Across 44 tenancies")
-    stat(s, col_x(2)[0], top, COL, "COLLECTED", "QAR 357,500", "93% of rent due",
-         value_color=GREEN)
-    stat(s, col_x(3)[0], top, COL, "OUTSTANDING", "QAR 28,500", "4 tenancies",
-         value_color=AMBER)
-
-    card(s, M, 8.12, CW, 2.22, fill=INK, line=None, radius=0.18)
-    text(s, M + 0.50, 8.54, 3.81, 0.38, "NEEDS ATTENTION", font=MONO, size=20.25,
-         color=LIME, spacing=150)
-    label_row(s, M + 4.62, 8.50, CW - 5.12,
-              ["6 leases expiring before 1 Dec", "4 open work orders",
-               "2 transfers awaiting verification"],
-              size=22.5, color=PAPER)
-    text(s, M + 0.50, 9.50, 12.0, 0.40,
-         "Each one opens onto the lease, unit or work order behind it.",
-         size=21, color=DIM2)
-    corner(s)
-    return s
-
-
-def s05_rent(prs):
-    s = slide(prs)
-    head(s, "04", "RENT TRACKING", "Every QAR has a position")
-
-    top = 4.40
-    # The status column is sized for "Scheduled", the longest word in it.
-    cols = [(M + 0.46, 6.2, PP_ALIGN.LEFT), (M + 7.0, 2.5, PP_ALIGN.RIGHT),
-            (M + 9.8, 2.5, PP_ALIGN.RIGHT), (M + 12.6, 2.5, PP_ALIGN.RIGHT),
-            (M + 15.2, 2.0, PP_ALIGN.RIGHT)]
-    heads = ["UNIT · LEASE", "RENT DUE", "RECEIVED", "OUTSTANDING", "STATUS"]
-    card(s, M, top, CW, 4.42, fill=WHITE, line=BORDER)
-    for (x, w, al), hd in zip(cols, heads):
-        text(s, x, top + 0.40, w, 0.38, hd, font=MONO, size=18.75, color=MUTED,
-             spacing=120, align=al)
-    rule(s, M + 0.46, top + 0.94, CW - 0.92)
-
-    rows = [("Unit 1204 · QA-2026-0417", "9,500", "9,500", "—", "Paid", GREEN),
-            ("Unit 0902 · QA-2026-0388", "10,000", "6,000", "4,000", "Due", AMBER),
-            ("Unit 0410 · QA-2025-1122", "8,250", "—", "8,250", "Overdue", RED),
-            ("Unit 1507 · QA-2026-0451", "12,000", "—", "12,000", "Scheduled", BLUE)]
-    y = top + 1.22
-    for label, due, recv, out, status, colour in rows:
-        text(s, cols[0][0], y, cols[0][1], 0.42, label, size=22.5, color=INK)
-        for (x, w, al), v, c in zip(cols[1:4], [due, recv, out],
-                                    [INK, GREEN if recv != "—" else MUTED,
-                                     colour if out != "—" else MUTED]):
-            text(s, x, y, w, 0.42, v, font=MONO, size=22.5, color=c, align=al,
-                 bold=True)
-        text(s, cols[4][0], y - 0.04, cols[4][1], 0.44, status, font=MONO,
-             size=19.5, color=colour, align=PP_ALIGN.RIGHT, bold=True)
-        y += 0.84
-        if label != rows[-1][0]:
-            rule(s, M + 0.46, y - 0.22, CW - 0.92, color=RGBColor(0xF2, 0xEE, 0xEC))
-
-    text(s, M, 9.42, 5.2, 0.38, "NOTHING RECONCILED BY HAND", font=MONO,
-         size=19.5, color=MUTED, spacing=150)
-    arrow_chain(s, M + 5.4, 9.36,
-                ["Tenant", "Unit", "Lease", "Property", "Owner statement"],
-                size=21)
-    corner(s)
-    return s
-
-
-def s06_payments(prs):
-    s = slide(prs)
-    head(s, "05", "PAYMENTS", "From cheque to cleared")
-
-    w, xs = grid(3)
-    top = 4.45
-    blocks = [
-        ("Post-dated cheques",
-         ["RECEIVED", "STORED", "DUE", "SUBMITTED", "CLEARED", "BOUNCED"],
-         "A replacement cheque links to the one it replaces. The chain stays intact.",
-         None),
-        ("Bank transfers",
-         ["SUBMITTED", "VERIFIED", "ALLOCATED"],
-         "The tenant uploads the receipt. Maskan matches it to the lease and the month.",
-         None),
-        ("Digital payments", [],
-         "Built to integrate with authorised payment providers when the "
-         "portfolio is ready.",
-         "ROADMAP · PHASE 02"),
-    ]
-    CARD_H, BODY_Y = 5.05, 3.78       # body sits at a fixed depth in every card
-    for x, (title, states, body, tag) in zip(xs, blocks):
-        card(s, x, top, w, CARD_H)
-        text(s, x + 0.40, top + 0.42, w - 0.8, 0.46, title, size=27, color=INK,
-             bold=True)
-        y = top + 1.08
-        for st in states:
-            colour = RED if st == "BOUNCED" else (GREEN if st == "CLEARED" else MUTED)
-            bg = RED_PALE if st == "BOUNCED" else (GREEN_PALE if st == "CLEARED" else SURFACE)
-            rect(s, x + 0.40, y, 2.56, 0.38, fill=bg, line=None, radius=0.10)
-            text(s, x + 0.40, y + 0.04, 2.56, 0.32, st, font=MONO, size=16.5,
-                 color=colour, spacing=130, align=PP_ALIGN.CENTER)
-            y += 0.42
-        if tag:
-            rect(s, x + 0.40, y, 2.9, 0.42, fill=LIME_PALE, line=None, radius=0.10)
-            text(s, x + 0.40, y + 0.06, 2.9, 0.32, tag, font=MONO, size=16.5,
-                 color=LIME_DARK, spacing=120, align=PP_ALIGN.CENTER)
-        text(s, x + 0.40, top + BODY_Y, w - 0.8, 1.0, body,
-             size=20.25, color=BODY, line=1.28)
-
-    text(s, M, 9.90, CW, 0.52,
-         "Nothing about the way you collect rent has to change on day one.",
-         size=26, color=INK, bold=True)
-    corner(s)
-    return s
-
-
-def s07_statements(prs):
-    s = slide(prs)
-    head(s, "06", "OWNER STATEMENTS", "We show the workings")
-
-    top = 4.30
-    card(s, M, top, 10.1, 5.70)
-    text(s, M + 0.46, top + 0.38, 6.0, 0.38, "STATEMENT · AUGUST 2026",
-         font=MONO, size=19.5, color=MUTED, spacing=130)
-    text(s, M + 6.6, top + 0.38, 3.0, 0.38, "QAR", font=MONO, size=19.5,
-         color=MUTED, spacing=130, align=PP_ALIGN.RIGHT)
-    rule(s, M + 0.46, top + 0.90, 9.18)
-
-    lines = [("Gross rent received", "120,000", INK),
-             ("Maintenance · 3 work orders", "− 4,500", AMBER),
-             ("Property expenses", "− 2,000", AMBER),
-             ("Management fee · 5%", "− 6,000", AMBER),
-             ("Adjustments", "500", INK)]
-    y = top + 1.10
-    for label, value, colour in lines:
-        text(s, M + 0.46, y, 6.2, 0.42, label, size=22.5, color=INK)
-        text(s, M + 5.0, y, 4.64, 0.42, value, font=MONO, size=22.5,
-             color=colour, align=PP_ALIGN.RIGHT, bold=True)
-        y += 0.64
-        rule(s, M + 0.46, y - 0.14, 9.18, color=RGBColor(0xF2, 0xEE, 0xEC))
-
-    rule(s, M + 0.46, y + 0.04, 9.18, color=INK, weight=0.02)
-    text(s, M + 0.46, y + 0.28, 6.2, 0.46, "Paid to owner", size=26, color=INK,
-         bold=True)
-    text(s, M + 4.6, y + 0.22, 5.04, 0.52, "QAR 108,000", font=MONO, size=30,
-         color=INK, bold=True, align=PP_ALIGN.RIGHT)
-    text(s, M + 0.46, y + 0.88, 7.0, 0.36, "TRANSFERRED 5 SEPTEMBER 2026",
-         font=MONO, size=18, color=MUTED, spacing=130)
-
-    rx = M + 10.56
-    rw = CW - 10.56
-    text(s, rx, top + 0.30, rw, 0.60, "No one has to explain the payout.",
-         size=30, color=INK, bold=True)
-    text(s, rx, top + 1.30, rw, 1.5,
-         "Each line opens onto the unit, invoice or work order behind it. "
-         "The same statement is seen by the owner, the manager and the accountant.",
-         size=22.5, color=BODY, line=1.34)
-    note(s, rx, top + 3.20, rw, 1.90, "EXPORTABLE",
-         "PDF statement, or a ledger feed into your accounting software.",
-         size=21.75)
-    corner(s)
-    return s
-
-
-def s08_maintenance(prs):
-    s = slide(prs)
-    head(s, "07", "MAINTENANCE", "A work order, not a WhatsApp thread")
-
-    steps = [("01", "Tenant reports the issue"), ("02", "Photos attached to the unit"),
-             ("03", "Manager reviews and prices"), ("04", "Vendor assigned with a date"),
-             ("05", "Vendor attends the unit"), ("06", "Before and after evidence"),
-             ("07", "Invoice uploaded, cost approved"), ("08", "Closed, and on the statement")]
-    w, xs = grid(4)
-    for i, (num, label) in enumerate(steps):
-        x = xs[i % 4]
-        y = 4.45 + (i // 4) * 1.74
-        card(s, x, y, w, 1.46)
-        rect(s, x + 0.32, y + 0.30, 0.52, 0.52, fill=LIME_PALE, line=None, radius=0.14)
-        text(s, x + 0.32, y + 0.40, 0.52, 0.34, num, font=MONO, size=19.5,
-             color=LIME_DARK, bold=True, align=PP_ALIGN.CENTER)
-        text(s, x + 1.04, y + 0.34, w - 1.36, 0.80, label, size=21.75, color=INK,
-             line=1.22)
-
-    card(s, M, 8.40, CW, 1.94, fill=INK, line=None, radius=0.18)
-    text(s, M + 0.50, 8.82, 3.6, 0.38, "THE OWNER SEES", font=MONO, size=20.25,
-         color=LIME, spacing=150)
-    label_row(s, M + 4.40, 8.78, CW - 4.90,
-              ["What happened", "Who handled it", "Which unit", "What it cost",
-               "When it closed"], size=22.5, color=PAPER)
-    text(s, M + 0.50, 9.56, 12.0, 0.40,
-         "Evidence, cost and dates stay attached to the unit for the life of the asset.",
-         size=21, color=DIM2)
-    corner(s)
-    return s
-
-
-def s09_leases(prs):
-    s = slide(prs)
-    head(s, "08", "LEASES", "A renewal is not a surprise")
-
-    fields = ["Tenant", "Lease start", "Lease end", "Rent and schedule", "Deposit",
-              "Documents", "Outstanding balance", "Renewal status",
-              "Registration status", "Full tenancy history"]
-    w, xs = grid(5)
-    for i, f in enumerate(fields):
+    chain = ["Owner", "Property", "Building", "Unit", "Tenant",
+             "Lease", "Rent", "Maintenance", "Expenses", "Payout"]
+    w, xs = col(5, gap=0.42)
+    for i, item in enumerate(chain):
         x = xs[i % 5]
-        y = 4.50 + (i // 5) * 1.38
-        card(s, x, y, w, 1.20)
-        text(s, x + 0.34, y + 0.26, w - 0.68, 0.80, f, size=22.5, color=INK,
-             line=1.20)
-
-    card(s, M, 7.52, CW, 2.60, fill=INK, line=None, radius=0.18)
-    text(s, M + 0.60, 7.96, 6.0, 0.38, "EXPIRY FLAGGED AT", font=MONO, size=20.25,
-         color=LIME, spacing=150)
-    x = M + 0.60
-    for d in ["120", "90", "60", "30"]:
-        rect(s, x, 8.52, 1.34, 1.02, fill=INK_SOFT, line=None, radius=0.14)
-        text(s, x, 8.70, 1.34, 0.62, d, font=MONO, size=33, color=LIME,
-             bold=True, align=PP_ALIGN.CENTER)
-        x += 1.54
-    text(s, x + 0.20, 8.82, 10.4, 0.90,
-         "days before the lease ends — with the renewal decision recorded against it",
-         size=23.25, color=DIM2, line=1.26)
-    corner(s)
+        y = 7.30 + (i // 5) * 1.10
+        rule(s, x, y, w, color=INK_SOFT, weight=0.012)
+        text(s, x, y + 0.24, w, 0.46, item, size=22, color=PAPER)
+    page_mark(s, 4, dark=True)
     return s
 
 
-def s10_compliance(prs):
+def s05_dashboard(prs):
     s = slide(prs)
-    # Sized to clear the content below on one line rather than wrapping into it.
-    head(s, "09", "COMPLIANCE", "Documents ready before they are asked for",
-         size=56)
+    eyebrow(s, "03 — The workspace")
+    headline(s, "Monday morning, answered", size=H2, top=1.86)
+    caption(s, "Everything outstanding, everything expiring, everything "
+               "awaiting a decision — on the screen that opens first.",
+            top=2.90, size=23, color=BODY, width=13.0)
+    picture(s, "dashboard-wide", M, 4.15, CW, 6.40)
+    page_mark(s, 5)
+    return s
 
-    items = ["Lease registration status", "Registration references", "Tenant documents",
-             "Owner documents", "Property documents", "Missing-document alerts",
-             "Expiry tracking", "Renewal readiness"]
-    w, xs = grid(2)
-    left_w = 10.1
-    card(s, M, 4.45, left_w, 5.30)
-    for i, it in enumerate(items):
-        y = 4.88 + i * 0.60
-        rect(s, M + 0.46, y + 0.16, 0.14, 0.14, fill=LIME, line=None, radius=0.07)
-        text(s, M + 0.86, y, left_w - 1.3, 0.44, it, size=22.5, color=INK)
 
-    rx, rw = M + 10.56, CW - 10.56
-    text(s, rx, 4.72, rw, 0.60, "Maskan prepares and tracks.", size=30,
+def s06_rent(prs):
+    s = slide(prs)
+    eyebrow(s, "04 — Rent tracking")
+    headline(s, "Every riyal has a position", size=H2, top=1.86)
+
+    top = 3.50
+    cols = [(M, 5.8, PP_ALIGN.LEFT), (M + 6.2, 2.5, PP_ALIGN.RIGHT),
+            (M + 9.0, 2.5, PP_ALIGN.RIGHT), (M + 11.8, 2.5, PP_ALIGN.RIGHT),
+            (M + 14.6, 2.2, PP_ALIGN.RIGHT)]
+    for (x, w, al), h in zip(cols, ["Unit and lease", "Rent due", "Received",
+                                    "Outstanding", "Status"]):
+        text(s, x, top, w, 0.36, h.upper(), size=LABEL, color=MUTED,
+             track=140, align=al, bold=True)
+    rule(s, M, top + 0.62, CW, color=INK)
+
+    rows = [("Unit 1204 · QA-2026-0417", "9,500", "9,500", "—", GREEN, "Paid"),
+            ("Unit 0902 · QA-2026-0388", "10,000", "6,000", "4,000", AMBER, "Due"),
+            ("Unit 0410 · QA-2025-1122", "8,250", "—", "8,250", RED, "Overdue"),
+            ("Unit 1507 · QA-2026-0451", "12,000", "—", "12,000", MUTED, "Scheduled")]
+    y = top + 1.00
+    for i, (label, due, recv, out, colour, status) in enumerate(rows):
+        text(s, cols[0][0], y, cols[0][1], 0.50, label, size=23, color=INK)
+        for (x, w, al), v, c in zip(cols[1:4], [due, recv, out],
+                                    [INK, GREEN if recv != "—" else MUTED, colour]):
+            text(s, x, y, w, 0.50, v, font=DISPLAY, size=23, color=c,
+                 align=al, bold=True)
+        text(s, cols[4][0], y + 0.04, cols[4][1], 0.50, status, size=SMALL,
+             color=colour, align=PP_ALIGN.RIGHT)
+        y += 0.98
+        if i < len(rows) - 1:
+            rule(s, M, y - 0.26, CW)
+
+    rule(s, M, 8.90, CW, color=INK)
+    text(s, M, 9.22, CW, 0.60,
+         "Nothing reconciled by hand. Every figure traces from the tenant to "
+         "the unit, the lease, the property and the owner statement.",
+         size=21, color=BODY)
+    page_mark(s, 6)
+    return s
+
+
+def s07_cheques(prs):
+    s = slide(prs)
+    eyebrow(s, "05 — Payments")
+    headline(s, "Built for how Qatar\nactually pays rent.", size=62, top=2.00,
+             width=7.6, line=1.06)
+    text(s, M, 5.40, 7.2, 2.6,
+         "Post-dated cheques are tracked from received to cleared, and a "
+         "replacement links to the cheque it replaces so the chain stays "
+         "intact. Bank transfers are matched to the lease and the month.",
+         size=22, color=BODY, line=1.44)
+    text(s, M, 8.40, 7.2, 0.90,
+         "Nothing about the way you collect rent has to change on day one.",
+         font=DISPLAY, size=26, color=INK, bold=True, line=1.24)
+    picture(s, "cheques", 9.55, 2.95, 9.05, 6.40)
+    page_mark(s, 7)
+    return s
+
+
+def s08_statements(prs):
+    s = slide(prs)
+    eyebrow(s, "06 — Owner statements")
+    headline(s, "We show the workings", size=H2, top=1.86)
+
+    top = 3.40
+    text(s, M, top, 7.6, 0.36, "STATEMENT · AUGUST 2026", size=LABEL,
+         color=MUTED, track=140, bold=True)
+    rule(s, M, top + 0.56, 7.6, color=INK)
+    y = pairs(s, M, top + 0.92, 7.6,
+              [("Gross rent received", "120,000", INK),
+               ("Maintenance · 3 work orders", "−4,500", AMBER),
+               ("Property expenses", "−2,000", AMBER),
+               ("Management fee · 5%", "−6,000", AMBER),
+               ("Adjustments", "500", INK)],
+              size=22, gap=0.78, val_font=DISPLAY, key_w=5.0)
+    rule(s, M, y + 0.04, 7.6, color=INK)
+    text(s, M, y + 0.34, 3.6, 0.56, "Paid to owner", font=DISPLAY, size=26,
          color=INK, bold=True)
-    text(s, rx, 5.62, rw, 1.6,
-         "Official registration stays with the authorised government systems. "
-         "We hold the operational record that feeds them.",
-         size=22.5, color=BODY, line=1.34)
-    note(s, rx, 7.55, rw, 2.20, "CONTEXT",
+    text(s, M + 3.6, y + 0.28, 4.0, 0.62, "QAR 108,000", font=DISPLAY,
+         size=30, color=INK, bold=True, align=PP_ALIGN.RIGHT)
+    text(s, M, y + 1.06, 7.6, 0.36, "TRANSFERRED 5 SEPTEMBER 2026",
+         size=LABEL, color=MUTED, track=120, bold=True)
+
+    rx = M + 8.80
+    rw = CW - 8.80
+    text(s, rx, top, rw, 1.10, "No one has to explain the payout.",
+         font=DISPLAY, size=32, color=INK, bold=True, line=1.20)
+    text(s, rx, top + 1.30, rw, 2.0,
+         "Each line opens onto the unit, invoice or work order behind it, and "
+         "the owner, the manager and the accountant all read the same "
+         "statement. Exports as a PDF, or as a ledger feed into your "
+         "accounting software.",
+         size=22, color=BODY, line=1.44)
+    picture(s, "statements", rx, top + 3.70, rw, 3.70, align="left")
+    page_mark(s, 8)
+    return s
+
+
+def s09_maintenance(prs):
+    s = slide(prs)
+    eyebrow(s, "07 — Maintenance")
+    headline(s, "A work order, not a WhatsApp thread", size=H2, top=1.86)
+    caption(s, "Every repair carries its own evidence, from the tenant's "
+               "first photograph to the invoice on the owner's statement.",
+            top=2.90, size=23, color=BODY, width=13.0)
+
+    steps(s, M, 4.10, CW,
+          ["Tenant reports the issue",
+           "Photos attached to the unit",
+           "Manager reviews and prices",
+           "Vendor assigned with a date",
+           "Vendor attends the unit",
+           "Before and after evidence",
+           "Invoice uploaded and approved",
+           "Closed, and on the statement"],
+          cols=4, rowgap=2.05)
+
+    rule(s, M, 9.10, CW, color=INK)
+    text(s, M, 9.44, CW, 0.56,
+         "The owner sees what happened, who handled it, which unit, what it "
+         "cost and when it closed.",
+         size=21, color=BODY)
+    page_mark(s, 9)
+    return s
+
+
+def s10_leases(prs):
+    s = slide(prs)
+    eyebrow(s, "08 — Leases and renewals")
+    headline(s, "A renewal is not a surprise", size=H2, top=1.86)
+
+    text(s, M, 3.40, 7.4, 0.40, "HELD AGAINST EVERY TENANCY", size=LABEL,
+         color=MUTED, track=140, bold=True)
+    listing(s, M, 4.00, 7.4,
+            ["Tenant, lease start and lease end", "Rent and payment schedule",
+             "Deposit held", "Documents and registration status",
+             "Outstanding balance", "Renewal decision and history"],
+            size=22, gap=0.78)
+
+    rx = M + 8.80
+    rw = CW - 8.80
+    text(s, rx, 3.40, rw, 0.40, "EXPIRY FLAGGED AT", size=LABEL, color=MUTED,
+         track=140, bold=True)
+    dw, dxs = (rw - 3 * 0.34) / 4, None
+    for i, d in enumerate(["120", "90", "60", "30"]):
+        x = rx + i * (dw + 0.34)
+        rule(s, x, 4.10, dw, color=INK)
+        text(s, x, 4.34, dw, 1.10, d, font=DISPLAY, size=56, color=INK,
+             bold=True, line=1.0)
+        text(s, x, 5.50, dw, 0.36, "DAYS", size=LABEL, color=MUTED, track=120,
+             bold=True)
+    text(s, rx, 6.40, rw, 1.40,
+         "…before the lease ends, with the renewal decision recorded against "
+         "the tenancy rather than remembered by a person.",
+         size=22, color=BODY, line=1.44)
+    page_mark(s, 10)
+    return s
+
+
+def s11_compliance(prs):
+    s = slide(prs)
+    eyebrow(s, "09 — Compliance")
+    headline(s, "Documents ready\nbefore they are\nasked for.", size=58,
+             top=1.95, width=8.2, line=1.08)
+    text(s, M, 5.50, 7.6, 2.4,
+         "Maskan prepares and tracks. Official registration stays with the "
+         "authorised government systems — we hold the operational record "
+         "that feeds them.",
+         size=22, color=BODY, line=1.44)
+    rule(s, M, 7.80, 7.6)
+    text(s, M, 8.10, 7.6, 1.5,
          "Aqarat already provides digital services including rental-contract "
          "registration and market indicators, and continues to expand that "
          "infrastructure.",
-         fill=SURFACE, label_color=MUTED, size=21)
-    corner(s)
+         size=SMALL, color=MUTED, line=1.42)
+
+    rx = M + 9.00
+    rw = CW - 9.00
+    listing(s, rx, 2.30, rw,
+            ["Lease registration status", "Registration references",
+             "Tenant documents", "Owner documents", "Property documents",
+             "Missing-document alerts", "Expiry tracking",
+             "Renewal readiness"],
+            size=23, gap=0.86)
+    page_mark(s, 11)
     return s
 
 
-def s11_roles(prs):
+def s12_roles(prs):
     s = slide(prs)
-    head(s, "10", "POSITIONING", "One system for the whole tenancy")
+    eyebrow(s, "10 — Positioning")
+    headline(s, "One system for the whole tenancy", size=H2, top=1.86)
 
-    roles = [("MANAGER", "Operate the portfolio", "30 screens"),
-             ("OWNER", "Understand the asset", "10 screens"),
-             ("TENANT", "Everything about the home", "7 screens"),
-             ("VENDOR", "Manage the work", "Assigned jobs"),
-             ("PLATFORM", "Operate the service", "Admin console")]
-    w, xs = grid(5)
+    roles = [("Manager", "Operate the portfolio", "30 screens"),
+             ("Owner", "Understand the asset", "10 screens"),
+             ("Tenant", "Everything about the home", "7 screens"),
+             ("Vendor", "Manage the work", "Assigned jobs"),
+             ("Platform", "Operate the service", "Admin console")]
+    w, xs = col(5, gap=0.52)
     for x, (name, line1, line2) in zip(xs, roles):
-        card(s, x, 4.50, w, 3.60)
-        rect(s, x, 4.50, w, 0.10, fill=LIME, line=None)
-        text(s, x + 0.36, 5.05, w - 0.72, 0.40, name, font=MONO, size=21,
-             color=INK, spacing=150, bold=True)
-        text(s, x + 0.36, 5.70, w - 0.72, 1.2, line1, size=23.25, color=BODY,
-             line=1.26)
-        text(s, x + 0.36, 7.30, w - 0.72, 0.40, line2, font=MONO, size=18.75,
-             color=MUTED, spacing=100)
+        rule(s, x, 3.80, w, color=INK)
+        text(s, x, 4.10, w, 0.60, name, font=DISPLAY, size=30, color=INK,
+             bold=True)
+        text(s, x, 4.95, w, 1.40, line1, size=21, color=BODY, line=1.30)
+        text(s, x, 6.55, w, 0.40, line2.upper(), size=LABEL, color=MUTED,
+             track=120, bold=True)
 
-    card(s, M, 8.54, CW, 1.80, fill=INK, line=None, radius=0.18)
-    text(s, M + 0.60, 9.00, 12.0, 0.60, "Five views. One ledger underneath.",
-         size=30, color=PAPER, bold=True)
-    text(s, M + 0.60, 9.70, 16.4, 0.42,
-         "Every role reads the same records. Row-level security in the database "
-         "decides which of them each person can see.",
-         size=21, color=DIM2)
-    corner(s)
-    return s
-
-
-def s12_manager(prs):
-    s = slide(prs)
-    head(s, "11", "THE MANAGER WORKSPACE", "Thirty screens, four jobs")
-
-    groups = [
-        ("PORTFOLIO", ["Properties", "Buildings", "Units", "Vacancy", "Owners"]),
-        ("LETTING", ["Leasing pipeline", "Offers", "Offer builder", "Tenants", "Leases"]),
-        ("MONEY", ["Payments", "Cheque register", "Take payment", "Outstanding",
-                   "Reconciliation", "Ledger", "Expenses", "Statements",
-                   "Opening balances"]),
-        ("OPERATIONS", ["Maintenance", "Work orders", "Reports", "Settings"]),
-    ]
-    w, xs = grid(4)
-    for x, (name, items) in zip(xs, groups):
-        card(s, x, 4.45, w, 5.30)
-        rect(s, x + 0.34, 4.82, 1.9, 0.44, fill=LIME_PALE, line=None, radius=0.10)
-        text(s, x + 0.34, 4.90, 1.9, 0.32, name, font=MONO, size=16.5,
-             color=LIME_DARK, spacing=130, align=PP_ALIGN.CENTER)
-        for i, it in enumerate(items):
-            text(s, x + 0.34, 5.52 + i * 0.44, w - 0.68, 0.40, it, size=20.25,
-                 color=INK)
-    corner(s)
+    rule(s, M, 7.95, CW, color=INK)
+    text(s, M, 8.30, 11.0, 0.70, "Five views. One ledger underneath.",
+         font=DISPLAY, size=32, color=INK, bold=True)
+    text(s, M, 9.20, 14.0, 0.60,
+         "Every role reads the same records. Row-level security in the "
+         "database decides which of them each person can see.",
+         size=21, color=BODY)
+    page_mark(s, 12)
     return s
