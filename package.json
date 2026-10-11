@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:rls": "bash tools/rls-test.sh"
+    "test:rls": "bash tools/rls-test.sh",
+    "test:coverage": "python3 -I tools/coverage-check.py"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.2",
