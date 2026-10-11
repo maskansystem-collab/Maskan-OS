@@ -1,4 +1,5 @@
 import { Building2, Layers, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
 import { requirePlatformSuperAdmin } from "@/lib/permissions/guards";
 import {
   getPlatformMetrics,
@@ -105,7 +106,7 @@ export default async function AdminPage({
                 {organisations.map((org) => (
                   <TableRow key={org.id}>
                     <TableCell>
-                      <span className="font-medium text-neutral-900">{org.name}</span>
+                      <Link href={`/admin/organisations/${org.id}`} className="font-medium text-neutral-900 hover:underline">{org.name}</Link>
                       <p className="text-xs text-neutral-500">{org.email ?? org.slug}</p>
                     </TableCell>
                     <TableCell>

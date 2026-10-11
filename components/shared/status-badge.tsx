@@ -54,6 +54,11 @@ const STATUS_MAP: Record<string, { label: string; variant: Variant }> = {
   // org
   trial: { label: "Trial", variant: "info" },
   suspended: { label: "Suspended", variant: "danger" },
+  past_due: { label: "Past Due", variant: "danger" },
+  // registration readiness
+  ready: { label: "Ready", variant: "success" },
+  missing_documents: { label: "Missing Documents", variant: "warning" },
+  action_required: { label: "Action Required", variant: "danger" },
 };
 
 export function StatusBadge({ status }: { status: string }) {

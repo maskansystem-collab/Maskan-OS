@@ -5,6 +5,7 @@ import { listVendors, getVendorTrades } from "@/features/vendors/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FilterChip, FilterRow } from "@/components/shared/filter-chip";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils/format";
@@ -54,17 +55,14 @@ export default async function VendorsPage({
       </div>
 
       {trades.length > 0 ? (
-        <div className="mb-4 flex flex-wrap gap-2">
-          <FilterChip href="/vendors" label="All trades" active={!trade} />
+        <FilterRow>
+          <FilterChip href="/vendors" active={!trade}>All trades</FilterChip>
           {trades.map((t) => (
-            <FilterChip
-              key={t}
-              href={`/vendors?trade=${encodeURIComponent(t)}`}
-              label={t}
-              active={trade === t}
-            />
+            <FilterChip key={t} href={`/vendors?trade=${encodeURIComponent(t)}`} active={trade === t}>
+              {t}
+            </FilterChip>
           ))}
-        </div>
+        </FilterRow>
       ) : null}
 
       {vendors.length === 0 ? (
@@ -121,20 +119,5 @@ export default async function VendorsPage({
         </Table>
       )}
     </>
-  );
-}
-
-function FilterChip({ href, label, active }: { href: string; label: string; active: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={
-        active
-          ? "rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-paper"
-          : "rounded-full border border-neutral-200 px-3 py-1 text-xs text-neutral-600 hover:border-neutral-300"
-      }
-    >
-      {label}
-    </Link>
   );
 }

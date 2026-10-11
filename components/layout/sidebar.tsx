@@ -67,6 +67,7 @@ const NAV: Section[] = [
   {
     kind: "group", label: "Compliance", icon: CheckCircle2,
     items: [
+      { href: "/compliance", label: "Lease registration" },
       { href: "/reconciliation", label: "Reconciliation" },
       { href: "/opening-balances", label: "Opening balances" },
     ],

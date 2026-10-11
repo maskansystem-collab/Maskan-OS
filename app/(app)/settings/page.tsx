@@ -1,4 +1,7 @@
-import { Building2, CreditCard, Plug, ToggleLeft, Users } from "lucide-react";
+import Link from "next/link";
+import {
+  Building2, CreditCard, FileText, Percent, Plug, ShieldCheck, ToggleLeft, Users,
+} from "lucide-react";
 import { requireStaff } from "@/lib/permissions/guards";
 import { hasPermission } from "@/lib/permissions/context";
 import { createClient } from "@/lib/supabase/server";
@@ -36,6 +39,33 @@ const INTEGRATIONS = [
   },
 ];
 
+const MORE_SETTINGS = [
+  {
+    href: "/settings/roles",
+    label: "Roles",
+    icon: ShieldCheck,
+    description: "What each role is allowed to do.",
+  },
+  {
+    href: "/settings/fees",
+    label: "Management fees",
+    icon: Percent,
+    description: "What you charge owners, and any agreed exception.",
+  },
+  {
+    href: "/settings/templates",
+    label: "Document templates",
+    icon: FileText,
+    description: "The documents Maskan generates for you.",
+  },
+  {
+    href: "/settings/subscription",
+    label: "Subscription",
+    icon: CreditCard,
+    description: "Your plan, its allowances and what is in use.",
+  },
+];
+
 export default async function SettingsPage() {
   const { ctx, membership } = await requireStaff();
   const canManage = hasPermission(ctx, membership.organisationId, "settings.manage");
@@ -64,6 +94,27 @@ export default async function SettingsPage() {
         title="Settings"
         description={`Configure ${membership.organisationName} — company details, team, payments and integrations.`}
       />
+
+      {/* Four settings big enough to deserve their own screen. They sit above
+          the tabs rather than inside them — nine tabs is a wall, and each of
+          these is a table rather than a form. */}
+      <div className="mb-6 mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {MORE_SETTINGS.map((s) => (
+          <Link
+            key={s.href}
+            href={s.href}
+            className="group flex flex-col rounded-[14px] border border-neutral-200 bg-white px-[18px] pb-4 pt-[17px] transition-colors hover:border-neutral-300"
+          >
+            <span className="flex items-center justify-between gap-3">
+              <span className="text-[13.5px] font-[550] tracking-[-0.012em] text-neutral-900">
+                {s.label}
+              </span>
+              <s.icon className="h-4 w-4 shrink-0 text-neutral-400 group-hover:text-neutral-600" />
+            </span>
+            <span className="mt-1 text-[12.5px] leading-snug text-neutral-500">{s.description}</span>
+          </Link>
+        ))}
+      </div>
 
       <Tabs defaultValue="company">
         <TabsList>

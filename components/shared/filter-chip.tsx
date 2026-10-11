@@ -13,11 +13,14 @@ import { cn } from "@/lib/utils/cn";
 export function FilterChip({
   href,
   active,
+  count,
   children,
   className,
 }: {
   href: string;
   active?: boolean;
+  /** How many rows this filter would show. Omit where the number is noise. */
+  count?: number;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -33,6 +36,9 @@ export function FilterChip({
       )}
     >
       {children}
+      {count != null ? (
+        <span className={active ? "text-white/55" : "text-neutral-400"}>{count}</span>
+      ) : null}
     </Link>
   );
 }
