@@ -2,9 +2,14 @@
 
 Every route in `maskan-v2.html`, against what exists in the Next.js app.
 
-**72 of 99 built. 27 remaining.**
+**71 of 91 built. 20 remaining.**
 
-Of the 27, **none can be built without a schema change** — every screen
+Counted against the 91 view definitions in `maskan-v2.html` (every
+`V.name=` and `V["name"]=`), cross-checked so that every row below is a
+real view and every view has a row. An earlier version of this file said
+"72 of 99"; the denominator was wrong.
+
+Of the 20, **none can be built without a schema change** — every screen
 that only needed a route file now has one. The remaining work splits into
 three groups, listed at the bottom.
 
