@@ -59,7 +59,11 @@ const NAV: Section[] = [
     ],
   },
   { kind: "group", label: "Operations", icon: Wrench,
-    items: [{ href: "/maintenance", label: "Maintenance" }] },
+    items: [
+      { href: "/maintenance", label: "Maintenance" },
+      { href: "/vendors", label: "Vendors" },
+      { href: "/import", label: "Import" },
+    ] },
   {
     kind: "group", label: "Compliance", icon: CheckCircle2,
     items: [
