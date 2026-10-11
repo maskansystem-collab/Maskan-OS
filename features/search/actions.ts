@@ -154,7 +154,7 @@ export async function globalSearch(term: string): Promise<SearchGroup[]> {
     return {
       id: u.id, entity: "unit" as const, title: `Unit ${u.unit_number}`,
       subtitle: [property?.name, u.status].filter(Boolean).join(" · ") || null,
-      href: `/properties/${u.property_id}/units`,
+      href: `/units/${u.id}`,
     };
   }));
 

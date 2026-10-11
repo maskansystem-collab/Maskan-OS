@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CalendarClock, Check, MapPin, Play, X } from "lucide-react";
@@ -28,7 +29,7 @@ const PRIORITY_VARIANT = {
  * primary action for the job's current stage is a full-width button and
  * everything else is secondary.
  */
-export function VendorJobCard({ job }: { job: VendorJobRow }) {
+export function VendorJobCard({ job, href }: { job: VendorJobRow; href?: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -53,7 +54,13 @@ export function VendorJobCard({ job }: { job: VendorJobRow }) {
     <Card className="animate-[slide-up_0.3s_cubic-bezier(0.22,1,0.36,1)_both]">
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-sm">{job.request_code}</CardTitle>
+          <CardTitle className="text-sm">
+            {href ? (
+              <Link href={href} className="hover:underline">{job.request_code}</Link>
+            ) : (
+              job.request_code
+            )}
+          </CardTitle>
           <div className="flex items-center gap-1.5">
             <Badge variant={PRIORITY_VARIANT[job.priority]}>
               {MAINTENANCE_PRIORITIES.find((p) => p.value === job.priority)?.label}

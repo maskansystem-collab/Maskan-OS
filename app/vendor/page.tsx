@@ -1,6 +1,5 @@
 import { AlertCircle, CheckCircle2, Wrench } from "lucide-react";
-import { requireRole } from "@/lib/permissions/guards";
-import { createClient } from "@/lib/supabase/server";
+import { requireVendor } from "@/features/portals/vendor-guard";
 import { listVendorJobs } from "@/features/maintenance/queries";
 import { VendorJobCard } from "@/features/maintenance/components/vendor-job-card";
 import PortalLayout from "@/components/layout/portal-layout";
@@ -14,23 +13,7 @@ export const dynamic = "force-dynamic";
 const DONE = ["completed", "closed", "cancelled"];
 
 export default async function VendorPortalPage() {
-  const { ctx, membership } = await requireRole("vendor");
-
-  // The vendor link may sit on the membership, or only in vendor_members
-  // when the account was attached to a vendor without a membership column.
-  let vendorId = membership.vendorId;
-  if (!vendorId) {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("vendor_members")
-      .select(
-      "vendor_id"
-    )
-      .eq("profile_id", ctx.userId)
-      .eq("is_active", true)
-      .limit(1);
-    vendorId = data?.[0]?.vendor_id ?? null;
-  }
+  const { vendorId } = await requireVendor();
 
   if (!vendorId) {
     return (
@@ -84,7 +67,7 @@ export default async function VendorPortalPage() {
           ) : (
             <div className="stagger space-y-3">
               {active.map((job) => (
-                <VendorJobCard key={job.workOrderId} job={job} />
+                <VendorJobCard key={job.workOrderId} job={job} href={`/vendor/${job.workOrderId}`} />
               ))}
             </div>
           )}
@@ -96,7 +79,7 @@ export default async function VendorPortalPage() {
           ) : (
             <div className="stagger space-y-3">
               {finished.map((job) => (
-                <VendorJobCard key={job.workOrderId} job={job} />
+                <VendorJobCard key={job.workOrderId} job={job} href={`/vendor/${job.workOrderId}`} />
               ))}
             </div>
           )}

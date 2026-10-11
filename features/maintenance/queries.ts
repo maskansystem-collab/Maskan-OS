@@ -278,6 +278,21 @@ export async function getVendorOptions(organisationId: string) {
  * *and* by RLS — a vendor can never see another vendor's work orders, or any
  * maintenance request that hasn't been assigned to them.
  */
+/**
+ * One job, for the contractor it belongs to.
+ *
+ * Filtering on vendor_id as well as the work-order id is what stops a
+ * contractor opening someone else's job by changing the URL. RLS backs this
+ * up, but the query should not depend on that alone.
+ */
+export async function getVendorJob(
+  vendorId: string,
+  workOrderId: string
+): Promise<VendorJobRow | null> {
+  const jobs = await listVendorJobs(vendorId);
+  return jobs.find((job) => job.workOrderId === workOrderId) ?? null;
+}
+
 export async function listVendorJobs(vendorId: string): Promise<VendorJobRow[]> {
   const supabase = await createClient();
 
