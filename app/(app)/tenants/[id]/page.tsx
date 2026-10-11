@@ -8,6 +8,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 
@@ -56,13 +57,16 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
         />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Tenancies</CardTitle>
-            <CardDescription>Every lease held by this tenant, most recent first.</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Detail screens in this app are a tab bar over a full-width table,
+          the pattern the lease screen already uses. */}
+      <Tabs defaultValue="leases">
+        <TabsList>
+          <TabsTrigger value="leases">Tenancies</TabsTrigger>
+          <TabsTrigger value="occupants">Occupants</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="leases">
             {tenant.leases.length === 0 ? (
               <EmptyState icon={FileText} title="No tenancies yet" description="This tenant has never held a lease." />
             ) : (
@@ -95,57 +99,69 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
                 </TableBody>
               </Table>
             )}
-          </CardContent>
-        </Card>
+        </TabsContent>
 
-        <div className="space-y-5">
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <Field label="QID or passport" value={tenant.qid_or_passport} />
-              <Field label="Email" value={tenant.email} icon={Mail} />
-              <Field label="Phone" value={tenant.phone} icon={Phone} />
-              <Field label="Employer" value={tenant.employer} />
-              <Field label="Emergency contact" value={tenant.emergency_contact_name} />
-              <Field label="Emergency phone" value={tenant.emergency_contact_phone} />
-            </CardContent>
-          </Card>
+        <TabsContent value="occupants">
+          {tenant.occupants.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="No occupants recorded"
+              description="Nobody else is registered as living in the unit under this tenancy."
+            />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="text-right">Relationship</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tenant.occupants.map((o) => (
+                  <TableRow key={o.id}>
+                    <TableCell className="font-medium text-neutral-900">{o.name}</TableCell>
+                    <TableCell className="text-right text-neutral-600">{o.relationship ?? "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </TabsContent>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Occupants</CardTitle>
-              <CardDescription>Others living in the unit under this tenancy.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {tenant.occupants.length === 0 ? (
-                <p className="text-sm text-neutral-500">None recorded.</p>
-              ) : (
-                <ul className="space-y-2 text-sm">
-                  {tenant.occupants.map((o) => (
-                    <li key={o.id} className="flex items-baseline justify-between gap-3">
-                      <span className="text-neutral-900">{o.name}</span>
-                      <span className="text-xs text-neutral-500">{o.relationship ?? "—"}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-
-          {tenant.notes ? (
+        <TabsContent value="contact">
+          <div className="grid gap-5 sm:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Notes</CardTitle>
+                <CardTitle>Identity and contact</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-line text-sm text-neutral-600">{tenant.notes}</p>
+              <CardContent className="space-y-3 text-sm">
+                <Field label="QID or passport" value={tenant.qid_or_passport} />
+                <Field label="Nationality" value={tenant.nationality} />
+                <Field label="Email" value={tenant.email} icon={Mail} />
+                <Field label="Phone" value={tenant.phone} icon={Phone} />
+                <Field label="Employer" value={tenant.employer} />
               </CardContent>
             </Card>
-          ) : null}
-        </div>
-      </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Emergency contact</CardTitle>
+                <CardDescription>Who to call if the tenant cannot be reached.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <Field label="Name" value={tenant.emergency_contact_name} />
+                <Field label="Phone" value={tenant.emergency_contact_phone} icon={Phone} />
+                {tenant.notes ? (
+                  <div className="pt-1">
+                    <p className="mb-1 text-neutral-500">Notes</p>
+                    <p className="whitespace-pre-line text-neutral-700">{tenant.notes}</p>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </>
   );
 }

@@ -8,6 +8,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils/format";
 
@@ -56,13 +57,14 @@ export default async function OwnerDetailPage({ params }: { params: Promise<{ id
         />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Properties</CardTitle>
-            <CardDescription>What this owner holds, and how much of each.</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Tab bar over a full-width table — the house detail pattern. */}
+      <Tabs defaultValue="properties">
+        <TabsList>
+          <TabsTrigger value="properties">Properties</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="properties">
             {owner.properties.length === 0 ? (
               <EmptyState
                 icon={Building2}
@@ -98,34 +100,35 @@ export default async function OwnerDetailPage({ params }: { params: Promise<{ id
                 </TableBody>
               </Table>
             )}
-          </CardContent>
-        </Card>
+        </TabsContent>
 
-        <div className="space-y-5">
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <Field label={owner.kind === "company" ? "CR number" : "QID"} value={owner.qid_or_cr} />
-              <Field label="Email" value={owner.email} icon={Mail} />
-              <Field label="Phone" value={owner.phone} icon={Phone} />
-              <Field label="Address" value={owner.address} />
-            </CardContent>
-          </Card>
-
-          {owner.notes ? (
+        <TabsContent value="contact">
+          <div className="grid gap-5 sm:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Notes</CardTitle>
+                <CardTitle>Contact</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-line text-sm text-neutral-600">{owner.notes}</p>
+              <CardContent className="space-y-3 text-sm">
+                <Field label={owner.kind === "company" ? "CR number" : "QID"} value={owner.qid_or_cr} />
+                <Field label="Email" value={owner.email} icon={Mail} />
+                <Field label="Phone" value={owner.phone} icon={Phone} />
+                <Field label="Address" value={owner.address} />
               </CardContent>
             </Card>
-          ) : null}
-        </div>
-      </div>
+
+            {owner.notes ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-line text-sm text-neutral-600">{owner.notes}</p>
+                </CardContent>
+              </Card>
+            ) : null}
+          </div>
+        </TabsContent>
+      </Tabs>
     </>
   );
 }

@@ -7,6 +7,8 @@ import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/shared/empty-state";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
@@ -51,17 +53,19 @@ export default async function ChequeDetailPage({ params }: { params: Promise<{ i
         />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Status history</CardTitle>
-            <CardDescription>Every move this cheque has made, in order.</CardDescription>
-          </CardHeader>
-          <CardContent>
+      <Tabs defaultValue="history">
+        <TabsList>
+          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="details">Details</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="history">
             {cheque.timeline.length === 0 ? (
-              <p className="text-sm text-neutral-500">
-                Nothing recorded since it was received.
-              </p>
+              <EmptyState
+                icon={CalendarClock}
+                title="Nothing recorded yet"
+                description="This cheque has not moved since it was received."
+              />
             ) : (
               <ol className="relative space-y-5 border-l border-neutral-200 pl-5">
                 {cheque.timeline.map((event) => (
@@ -86,10 +90,10 @@ export default async function ChequeDetailPage({ params }: { params: Promise<{ i
                 ))}
               </ol>
             )}
-          </CardContent>
-        </Card>
+        </TabsContent>
 
-        <div className="space-y-5">
+        <TabsContent value="details">
+          <div className="grid gap-5 sm:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Against</CardTitle>
@@ -121,8 +125,9 @@ export default async function ChequeDetailPage({ params }: { params: Promise<{ i
               </CardContent>
             </Card>
           ) : null}
-        </div>
-      </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </>
   );
 }

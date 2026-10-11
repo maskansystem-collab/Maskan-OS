@@ -8,6 +8,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
@@ -59,8 +60,15 @@ export default async function MaintenanceDetailPage({ params }: { params: Promis
         <StatCard label="Evidence" value={String(request.attachments.length)} icon={Paperclip} sublabel="Photos and documents" />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
+      <Tabs defaultValue="request">
+        <TabsList>
+          <TabsTrigger value="request">Request</TabsTrigger>
+          <TabsTrigger value="order">Work order</TabsTrigger>
+          <TabsTrigger value="comments">Comments</TabsTrigger>
+          <TabsTrigger value="where">Where and evidence</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="request">
           <Card>
             <CardHeader>
               <CardTitle>What was reported</CardTitle>
@@ -75,7 +83,9 @@ export default async function MaintenanceDetailPage({ params }: { params: Promis
               ) : null}
             </CardContent>
           </Card>
+        </TabsContent>
 
+        <TabsContent value="order">
           {order ? (
             <Card>
               <CardHeader>
@@ -109,8 +119,12 @@ export default async function MaintenanceDetailPage({ params }: { params: Promis
                 ) : null}
               </CardContent>
             </Card>
-          ) : null}
+          ) : (
+            <p className="py-6 text-sm text-neutral-500">No work order has been raised yet.</p>
+          )}
+        </TabsContent>
 
+        <TabsContent value="comments">
           <Card>
             <CardHeader>
               <CardTitle>Comments</CardTitle>
@@ -140,9 +154,10 @@ export default async function MaintenanceDetailPage({ params }: { params: Promis
               )}
             </CardContent>
           </Card>
-        </div>
+        </TabsContent>
 
-        <div className="space-y-5">
+        <TabsContent value="where">
+          <div className="grid gap-5 sm:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Where</CardTitle>
@@ -202,8 +217,9 @@ export default async function MaintenanceDetailPage({ params }: { params: Promis
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </>
   );
 }
