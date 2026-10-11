@@ -85,16 +85,12 @@ someone else's owners. Role names stay neutral — staff, owners, tenants,
 vendors — and anything addressed at the owner says plainly that it works
 whether you own the portfolio or manage it for someone else.
 
-## Keeping the figures true
+## No pricing
 
-The prices on the plans slide come from the schema, not from marketing:
-
-```bash
-sed -n '/insert into plans/,/on conflict/p' \
-    supabase/migrations/0017_reference_data.sql
-```
-
-If those change, change the slide.
+Prices are not in this deck and should not be added back. Money is a
+conversation, not a slide — the plan tiers live in
+`supabase/migrations/0017_reference_data.sql` if a figure is needed for a
+specific proposal.
 
 ## Numbering
 

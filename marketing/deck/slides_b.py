@@ -165,43 +165,6 @@ def s_built(prs, n):
     return s
 
 
-def s_plans(prs, n):
-    s = slide(prs)
-    eyebrow(s, f"{n - 1:02d} — Plans")
-    headline(s, "Priced by the size of the portfolio", size=H2, top=1.86)
-
-    plans = [("Trial", "0", "25 units", "3 users"),
-             ("Starter", "499", "50 units", "5 users"),
-             ("Growth", "1,499", "200 units", "15 users"),
-             ("Professional", "3,999", "750 units", "40 users"),
-             ("Enterprise", None, "Unlimited", "Unlimited")]
-    w, xs = col(5, gap=0.52)
-    for x, (name, price, units, users) in zip(xs, plans):
-        rule(s, x, 3.70, w, color=INK)
-        text(s, x, 4.00, w, 0.50, name, font=DISPLAY, size=25, color=INK,
-             bold=True)
-        if price is None:
-            text(s, x, 4.75, w, 0.90, "Custom", font=DISPLAY, size=42,
-                 color=INK, bold=True, line=1.0)
-        else:
-            text(s, x, 4.75, w, 0.90,
-                 [[("QAR ", {"size": 20, "color": MUTED}),
-                   (price, {"size": 42, "color": INK})]],
-                 font=DISPLAY, bold=True, line=1.0)
-            text(s, x, 5.72, w, 0.36, "PER MONTH", size=LABEL, color=MUTED,
-                 track=120, bold=True)
-        text(s, x, 6.40, w, 0.46, units, size=21, color=INK)
-        text(s, x, 6.92, w, 0.46, users, size=21, color=INK)
-
-    rule(s, M, 8.10, CW)
-    text(s, M, 8.50, CW, 1.00,
-         "Online payments from Starter. WhatsApp notifications and advanced "
-         "reporting from Growth. White-label on Enterprise.",
-         size=21, color=BODY, line=1.40)
-    page_mark(s, n)
-    return s
-
-
 def s_why_now(prs, n):
     s = slide(prs, INK)
     eyebrow(s, f"{n - 1:02d} — Why now", color=ON_INK_DIM)
