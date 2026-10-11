@@ -55,6 +55,20 @@ const STATUS_MAP: Record<string, { label: string; variant: Variant }> = {
   trial: { label: "Trial", variant: "info" },
   suspended: { label: "Suspended", variant: "danger" },
   past_due: { label: "Past Due", variant: "danger" },
+  // renewal pipeline
+  needs_offer: { label: "Needs Offer", variant: "warning" },
+  offer_out: { label: "Offer Out", variant: "info" },
+  accepted: { label: "Accepted", variant: "success" },
+  declined: { label: "Declined", variant: "danger" },
+  lapsed: { label: "Lapsed", variant: "danger" },
+  // mandate and undertaking bands
+  terminated_mandate: { label: "Ended", variant: "outline" },
+  revoked: { label: "Revoked", variant: "outline" },
+  // contracts
+  awaiting_signature: { label: "Awaiting Signature", variant: "warning" },
+  partially_signed: { label: "Partially Signed", variant: "warning" },
+  fully_signed: { label: "Fully Signed", variant: "success" },
+  void: { label: "Void", variant: "outline" },
   // registration readiness
   ready: { label: "Ready", variant: "success" },
   missing_documents: { label: "Missing Documents", variant: "warning" },
