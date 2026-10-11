@@ -30,9 +30,16 @@ right, then **four stat cards**, then a **tab bar over a full-width table**.
 
 Reference: `app/(app)/leases/[id]/page.tsx`.
 
-Secondary content goes in a **tab**, not a sidebar. If a tab holds detail
-rather than rows, use `<div className="grid gap-5 sm:grid-cols-2">` of
-`Card`s inside the `TabsContent`.
+**The first tab may keep an aside; the rest are full width.** The
+prototype's property, unit and building screens all do this: the first tab
+is `grid gap-5 lg:grid-cols-[1fr_300px]` with the work on the left and
+context cards in an `<aside>` on the right, and every other tab is a
+full-width table. An earlier version of this file said secondary content
+goes in a tab "not a sidebar", which was wrong and would have pulled those
+three screens further from the prototype.
+
+A tab holding detail rather than rows uses `Card`s; a tab holding records
+uses a `Table`. Never both in one tab.
 
 The four stats should be the four numbers someone opens the screen to find
 — usually money, not counts of child records.
