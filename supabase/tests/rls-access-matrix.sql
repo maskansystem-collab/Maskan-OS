@@ -79,6 +79,38 @@ begin
 
   insert into bank_accounts (organisation_id, bank_name, account_name, account_number)
   values ('11111111-1111-1111-1111-111111111111', 'QNB', 'Acme Client Account', '1234567890');
+
+  -- 0021 / 0022: a department, an internal and an external party, an
+  -- in-flight move-in, the contract behind the tenancy, and a support
+  -- note that the organisation itself must never be able to read.
+  insert into departments (id, organisation_id, name, code, default_holding)
+  values ('d0000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111',
+    'Property Management', 'PM', 'managed');
+
+  insert into vendors (id, organisation_id, name, trade, is_internal, service_function, internal_rate_qar)
+  values ('d0000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111',
+    'In-house Maintenance', 'General', true, 'maintenance', 120);
+  insert into vendors (id, organisation_id, name, trade, is_internal, service_function)
+  values ('d0000000-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111',
+    'Rashid Cooling', 'HVAC / AC', false, 'maintenance');
+  insert into vendor_agreements (vendor_id, title, starts_on, response_hours, payment_terms_days)
+  values ('d0000000-0000-0000-0000-000000000003', 'Annual AC maintenance', '2026-01-01', 24, 30);
+
+  insert into move_ins (organisation_id, move_in_code, unit_id, tenant_id, step, proposed_rent)
+  values ('11111111-1111-1111-1111-111111111111', 'MV-018',
+    '44444444-4444-4444-4444-444444444444', '55555555-5555-5555-5555-555555555555',
+    'contract', 9500);
+
+  insert into contracts (id, organisation_id, contract_code, lease_id, subject, status)
+  values ('d0000000-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111',
+    'CT-0041', '66666666-6666-6666-6666-666666666666',
+    'Ahmed Hassan · 1204', 'partially_signed');
+  insert into contract_parties (contract_id, party_role, party_name, method, signed_at)
+  values ('d0000000-0000-0000-0000-000000000004', 'Tenant', 'Ahmed Hassan', 'e_signature', now());
+
+  insert into support_notes (organisation_id, author_name, body, category)
+  values ('11111111-1111-1111-1111-111111111111', 'Maskan Support',
+    'Walked them through cheque reconciliation.', 'onboarding');
 end;
 $$;
 
@@ -174,6 +206,15 @@ begin
   perform expect_rows('staff', staff, 'undertakings', 1);
   perform expect_rows('staff', staff, 'bank_accounts', 1);
   perform expect_rows('staff', staff, 'property_owners', 1);
+  perform expect_rows('staff', staff, 'departments', 1);
+  perform expect_rows('staff', staff, 'vendors', 2);
+  perform expect_rows('staff', staff, 'vendor_agreements', 1);
+  perform expect_rows('staff', staff, 'move_ins', 1);
+  perform expect_rows('staff', staff, 'contracts', 1);
+  perform expect_rows('staff', staff, 'contract_parties', 1);
+  -- Support notes are Maskan's own. Nobody in the organisation sees them,
+  -- however senior: the note may say the customer was confused.
+  perform expect_rows('staff', staff, 'support_notes', 0);
 
   -- An owner sees the property they hold and nothing else. Not the other
   -- property, not the tenants, not the client account.
@@ -183,6 +224,11 @@ begin
   perform expect_rows('owner', owner, 'tenants', 0);
   perform expect_rows('owner', owner, 'mandates', 1);
   perform expect_rows('owner', owner, 'bank_accounts', 0);
+  perform expect_rows('owner', owner, 'departments', 0);
+  perform expect_rows('owner', owner, 'move_ins', 0);
+  perform expect_rows('owner', owner, 'support_notes', 0);
+  -- The owner's mandate has no contract, and the tenancy's is not theirs.
+  perform expect_rows('owner', owner, 'contracts', 0);
 
   -- A tenant sees their own tenancy and nothing about the business.
   -- These nine zeroes are the leak 0020 closed.
@@ -195,12 +241,18 @@ begin
   perform expect_rows('tenant', tenant, 'property_owners', 0);
   perform expect_rows('tenant', tenant, 'management_fees', 0);
   perform expect_rows('tenant', tenant, 'property_expenses', 0);
+  perform expect_rows('tenant', tenant, 'departments', 0);
+  perform expect_rows('tenant', tenant, 'move_ins', 0);
+  perform expect_rows('tenant', tenant, 'vendor_agreements', 0);
+  perform expect_rows('tenant', tenant, 'support_notes', 0);
   -- but their own records remain readable
   perform expect_rows('tenant', tenant, 'tenants', 1);
   perform expect_rows('tenant', tenant, 'leases', 1);
   perform expect_rows('tenant', tenant, 'units', 1);
   perform expect_rows('tenant', tenant, 'undertakings', 1);
   perform expect_rows('tenant', tenant, 'organisations', 1);
+  -- but the contract for their own tenancy is theirs to read
+  perform expect_rows('tenant', tenant, 'contracts', 1);
 
   -- Another firm sees none of it.
   perform expect_rows('rival', rival, 'properties', 0);
@@ -210,6 +262,10 @@ begin
   perform expect_rows('rival', rival, 'mandates', 0);
   perform expect_rows('rival', rival, 'undertakings', 0);
   perform expect_rows('rival', rival, 'bank_accounts', 0);
+  perform expect_rows('rival', rival, 'departments', 0);
+  perform expect_rows('rival', rival, 'move_ins', 0);
+  perform expect_rows('rival', rival, 'contracts', 0);
+  perform expect_rows('rival', rival, 'vendors', 0);
 
   -- Signed out: zero rows, and no error. A -1 here means a policy
   -- recursed, which is how the properties fault presented.
@@ -219,6 +275,9 @@ begin
   perform expect_rows('anon', null, 'unit_owners', 0);
   perform expect_rows('anon', null, 'leases', 0);
   perform expect_rows('anon', null, 'mandates', 0);
+  perform expect_rows('anon', null, 'contracts', 0);
+  perform expect_rows('anon', null, 'move_ins', 0);
+  perform expect_rows('anon', null, 'support_notes', 0);
 end;
 $$;
 
