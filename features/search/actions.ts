@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext, primaryMembership } from "@/lib/permissions/context";
+import { formatCurrency } from "@/lib/utils/format";
 
 export type SearchEntity =
   | "tenant" | "property" | "unit" | "owner" | "lease" | "cheque" | "payment" | "maintenance";
@@ -177,13 +178,13 @@ export async function globalSearch(term: string): Promise<SearchGroup[]> {
 
   push("cheque", (cheques.data ?? []).map((c) => ({
     id: c.id, entity: "cheque" as const, title: `Cheque ${c.cheque_number}`,
-    subtitle: [c.bank_name, `QAR ${Number(c.amount).toLocaleString()}`, c.status].filter(Boolean).join(" · "),
+    subtitle: [c.bank_name, formatCurrency(Number(c.amount)), c.status].filter(Boolean).join(" · "),
     href: `/payments/cheques/${c.id}`,
   })));
 
   push("payment", (payments.data ?? []).map((p) => ({
     id: p.id, entity: "payment" as const, title: p.reference ?? "Payment",
-    subtitle: `QAR ${Number(p.amount).toLocaleString()} · ${p.paid_at}`,
+    subtitle: `${formatCurrency(Number(p.amount))} · ${p.paid_at}`,
     href: `/leases/${p.lease_id}`,
   })));
 

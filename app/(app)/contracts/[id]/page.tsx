@@ -8,6 +8,9 @@ import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "@/components/shared/empty-state";
 import { formatDate, formatDateTime } from "@/lib/utils/format";
 
 export const dynamic = "force-dynamic";
@@ -88,11 +91,17 @@ export default async function ContractDetailPage({
         />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
-        <div className="flex min-w-0 flex-col gap-4">
+      <Tabs defaultValue="signatures">
+        <TabsList>
+          <TabsTrigger value="signatures">Signatures</TabsTrigger>
+          <TabsTrigger value="document">Document</TabsTrigger>
+          <TabsTrigger value="trail">Audit trail</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="signatures">
           <Card>
             <CardHeader>
-              <CardTitle>Signatures</CardTitle>
+              <CardTitle>Who signs</CardTitle>
               <CardDescription>
                 Each party signs once, on screen or on paper. Both count.
               </CardDescription>
@@ -139,64 +148,111 @@ export default async function ContractDetailPage({
             </CardContent>
           </Card>
 
-          {c.templateVariables.length > 0 ? (
+          {c.outstanding > 0 && c.status !== "void" ? (
+            <p className="mt-4 rounded-[10px] bg-amber-50 px-3.5 py-3 text-[12.5px] leading-relaxed text-amber-800">
+              {c.outstanding} {c.outstanding === 1 ? "party has" : "parties have"} not
+              signed. Until they do, the agreement is not in force however complete
+              the rest of the file looks.
+            </p>
+          ) : null}
+        </TabsContent>
+
+        <TabsContent value="document">
+          <div className="grid gap-5 lg:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle>Fields the template fills in</CardTitle>
+              <CardHeader><CardTitle>Details</CardTitle></CardHeader>
+              <CardContent>
+                <dl className="divide-y divide-neutral-100 text-sm">
+                  <Row label="Reference">{c.contract_code}</Row>
+                  <Row label="Subject">{c.subject}</Row>
+                  <Row label="About">
+                    {c.leaseId ? (
+                      <Link href={`/leases/${c.leaseId}`} className="hover:underline">{c.leaseCode}</Link>
+                    ) : c.mandateId ? (
+                      <Link href={`/mandates/${c.mandateId}`} className="hover:underline">{c.mandateCode}</Link>
+                    ) : "—"}
+                  </Row>
+                  <Row label="Template">{c.templateName ?? "Uploaded"}</Row>
+                  <Row label="Language">
+                    {c.locale === "ar" ? "Arabic" : c.locale === "en" ? "English" : c.locale}
+                  </Row>
+                  <Row label="Pages">{c.page_count != null ? String(c.page_count) : "—"}</Row>
+                  <Row label="File">{c.storage_path ? "On file" : "Not uploaded"}</Row>
+                </dl>
+              </CardContent>
+            </Card>
+
+            {c.templateVariables.length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Fields the template fills in</CardTitle>
                 <CardDescription>
                   Read from the template body, so this is what it actually asks
                   for rather than a separate list to keep in step.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-1.5">
-                  {c.templateVariables.map((v) => (
-                    <span
-                      key={v}
-                      className="rounded-[6px] bg-neutral-100 px-1.5 py-0.5 font-mono text-[11.5px] text-neutral-700"
-                    >
-                      {v}
-                    </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {c.templateVariables.map((v) => (
+                      <span
+                        key={v}
+                        className="rounded-[6px] bg-neutral-100 px-1.5 py-0.5 font-mono text-[11.5px] text-neutral-700"
+                      >
+                        {v}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="trail">
+          {/* The signature records are the audit trail: each carries its
+              method, its moment and where it came from. There is nothing
+              separate to show, and inventing a second log would mean two
+              accounts of the same event. */}
+          {c.parties.filter((p) => p.signed_at).length === 0 ? (
+            <EmptyState
+              icon={Clock}
+              title="Nothing signed yet"
+              description="Each signature is recorded here with its method, its moment and the address it came from."
+            />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Party</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead>Origin</TableHead>
+                  <TableHead className="text-right">Signed</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {c.parties
+                  .filter((p) => p.signed_at)
+                  .map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-medium text-neutral-900">{p.party_name}</TableCell>
+                      <TableCell className="text-neutral-600">{p.party_role}</TableCell>
+                      <TableCell className="text-neutral-600">
+                        {SIGNATURE_METHOD_LABELS[p.method ?? ""] ?? p.method ?? "—"}
+                      </TableCell>
+                      <TableCell className="font-mono text-[12px] text-neutral-600">
+                        {p.signed_ip ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right text-neutral-600">
+                        {formatDateTime(p.signed_at!)}
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
-          ) : null}
-        </div>
-
-        <aside className="flex flex-col gap-3">
-          <Card>
-            <CardHeader><CardTitle>Details</CardTitle></CardHeader>
-            <CardContent>
-              <dl className="divide-y divide-neutral-100 text-sm">
-                <Row label="Reference">{c.contract_code}</Row>
-                <Row label="Subject">{c.subject}</Row>
-                <Row label="About">
-                  {c.leaseId ? (
-                    <Link href={`/leases/${c.leaseId}`} className="hover:underline">{c.leaseCode}</Link>
-                  ) : c.mandateId ? (
-                    <Link href={`/mandates/${c.mandateId}`} className="hover:underline">{c.mandateCode}</Link>
-                  ) : "—"}
-                </Row>
-                <Row label="Template">{c.templateName ?? "Uploaded"}</Row>
-                <Row label="Language">
-                  {c.locale === "ar" ? "Arabic" : c.locale === "en" ? "English" : c.locale}
-                </Row>
-                <Row label="Pages">{c.page_count != null ? String(c.page_count) : "—"}</Row>
-                <Row label="File">{c.storage_path ? "On file" : "Not uploaded"}</Row>
-              </dl>
-            </CardContent>
-          </Card>
-
-          {c.outstanding > 0 && c.status !== "void" ? (
-            <p className="rounded-[10px] bg-amber-50 px-3.5 py-3 text-[12.5px] leading-relaxed text-amber-800">
-              {c.outstanding} {c.outstanding === 1 ? "party has" : "parties have"} not
-              signed. Until they do, the agreement is not in force however complete
-              the rest of the file looks.
-            </p>
-          ) : null}
-        </aside>
-      </div>
+              </TableBody>
+            </Table>
+          )}
+        </TabsContent>
+      </Tabs>
     </>
   );
 }

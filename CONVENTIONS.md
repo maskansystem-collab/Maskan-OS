@@ -82,6 +82,38 @@ here uses.
 Batch related lookups with `Promise.all`, and never query per row — a list
 of fifty should cost the same as a list of five.
 
+> **25 pages still query inline.** They work, so they are debt
+> rather than a bug, but they are the reason the unit and building detail
+> screens were hard to extend: the query had to be found and understood
+> inside the JSX before anything could be added. Move one out whenever you
+> touch its screen for another reason, and do not add to the list.
+>
+> - `(app)/buildings/page.tsx`
+> - `(app)/dashboard/page.tsx`
+> - `(app)/expenses/page.tsx`
+> - `(app)/finance/page.tsx`
+> - `(app)/leases/page.tsx`
+> - `(app)/ledger/page.tsx`
+> - `(app)/maintenance/page.tsx`
+> - `(app)/owners/page.tsx`
+> - `(app)/payments/cheques/page.tsx`
+> - `(app)/payments/page.tsx`
+> - `(app)/record-payment/page.tsx`
+> - `(app)/settings/page.tsx`
+> - `(app)/take-payment/page.tsx`
+> - `(app)/tenants/page.tsx`
+> - `(app)/units/page.tsx`
+> - `(app)/vacancy/page.tsx`
+> - `owner/documents/page.tsx`
+> - `owner/ownership/page.tsx`
+> - `owner/vacancy/page.tsx`
+> - `page.tsx`
+> - `tenant/contract/page.tsx`
+> - `tenant/lease/page.tsx`
+> - `tenant/maintenance/page.tsx`
+> - `tenant/messages/page.tsx`
+> - `tenant/page.tsx`
+
 **`notFound()` when a record does not exist**, before touching its fields.
 
 **Empty states always.** `EmptyState` needs an `icon`; say what would put
@@ -96,7 +128,7 @@ and that `npx tsc --noEmit` and `npx eslint` are clean before committing.
 ## Row level security
 
 **Run `npm run test:rls` after touching a policy.** It applies every
-migration to a throwaway local Postgres and asserts 42 access cases. Two
+migration to a throwaway local Postgres and asserts 65 access cases. Two
 RLS faults shipped without it, and neither was visible from the app: a
 superuser and the service-role key both bypass RLS, so only a
 non-superuser with a JWT subject set finds them.
@@ -119,6 +151,28 @@ exist for this, and all five pin `search_path`.
 staff clause,** plus a case in the access matrix. `owners` went without a
 self-select policy for five migrations because the leak made it look like
 it worked.
+
+## Checking consistency, rather than remembering it
+
+```bash
+npm run test:coverage ../maskan-v2.html   # every prototype view has a route
+npm run test:rls                          # every policy, 65 assertions
+npm run typecheck && npm run lint && npm test
+```
+
+The things these do not catch, and how to check them by hand:
+
+```bash
+# A detail screen's shape must match the prototype's. Some use a tab bar,
+# some a two-column layout with an aside; it is not a free choice.
+for f in $(find app -path '*\[id\]*' -name page.tsx); do
+  grep -q TabsList "$f" && echo "tabs  $f" || echo "cards $f"
+done
+
+# Nobody should hand-roll a chip, a filter row, or a money format.
+grep -rl 'function FilterChip' app --include=page.tsx
+grep -rn 'toLocaleString' app features --include=*.ts --include=*.tsx
+```
 
 ## Before building a screen, check it does not already exist
 

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { formatCurrency } from "@/lib/utils/format";
 
 /**
  * Mandates and third-party undertakings.
@@ -540,7 +541,7 @@ export async function getOwnerMandate(ownerId: string): Promise<OwnerMandateView
       },
       {
         key: "maintenance_spend_cap",
-        label: cap > 0 ? `Approve repairs up to ${cap.toLocaleString("en-QA")} QAR` : "Approve repairs",
+        label: cap > 0 ? `Approve repairs up to ${formatCurrency(cap)}` : "Approve repairs",
         granted: cap > 0,
         detail: cap > 0
           ? "Anything above that waits for you, however urgent."
