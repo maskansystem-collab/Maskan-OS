@@ -24,6 +24,7 @@ from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.oxml.ns import qn
 from pathlib import Path
 
 # --- palette ---------------------------------------------------------------
@@ -92,6 +93,27 @@ def _spacing(run, hundredths):
     run.font._rPr.set("spc", str(hundredths))
 
 
+def _highlight(run, rgb):
+    """Marker-pen highlight behind a run.
+
+    Lime is a light colour: #C6F24E on the paper background is roughly 1.2:1
+    contrast, which is invisible. So on light slides the accent cannot be the
+    letterforms -- it has to sit behind them, with the text staying ink. On
+    ink slides lime text is used directly instead.
+
+    python-pptx does not expose a:highlight, and the schema fixes its position
+    in rPr: after the fill, before a:latin.
+    """
+    rPr = run.font._rPr
+    hl = rPr.makeelement(qn("a:highlight"), {})
+    clr = rPr.makeelement(qn("a:srgbClr"), {"val": f"{rgb}"})
+    hl.append(clr)
+    rPr.insert_element_before(
+        hl, "a:uLnTx", "a:uLn", "a:uFillTx", "a:uFill", "a:latin", "a:ea",
+        "a:cs", "a:sym", "a:hlinkClick", "a:hlinkMouseOver", "a:rtl",
+        "a:extLst")
+
+
 def text(s, l, t, w, h, body, *, font=TEXT, size=BODY_SZ, color=BODY,
          bold=False, align=PP_ALIGN.LEFT, track=None, line=None,
          anchor=MSO_ANCHOR.TOP, after=0):
@@ -135,6 +157,9 @@ def text(s, l, t, w, h, body, *, font=TEXT, size=BODY_SZ, color=BODY,
             tr = over.get("track", track)
             if tr:
                 _spacing(r, tr)
+            hl = over.get("mark")
+            if hl:
+                _highlight(r, hl)
     return box
 
 
@@ -190,19 +215,39 @@ def eyebrow(s, label, *, color=MUTED, top=1.15):
                 color=color, track=220, bold=True)
 
 
-def headline(s, title, *, size=H1, top=2.05, color=INK, width=CW, left=M,
-             line=1.00, align=PP_ALIGN.LEFT):
-    n = len(title.split("\n"))
-    return text(s, left, top, width, n * size / 72 * line + 0.5, title,
-                font=DISPLAY, size=size, color=color, bold=True, line=line,
-                align=align)
+def headline(s, title, *, accent=None, dark=False, size=H1, top=2.05,
+             color=INK, width=CW, left=M, line=1.00, align=PP_ALIGN.LEFT):
+    """A headline, optionally with one phrase picked out in lime.
+
+    On ink the accent is the letterforms. On paper it cannot be -- lime is
+    too light to read against it -- so the accent becomes a marker-pen
+    highlight behind ink text instead. Same signal, opposite mechanics.
+    """
+    lines = title.split("\n")
+    paras = []
+    for ln in lines:
+        if accent and accent in ln:
+            before, _, after = ln.partition(accent)
+            runs = []
+            if before:
+                runs.append((before, {}))
+            runs.append((accent, {"color": LIME} if dark else {"mark": "C6F24E"}))
+            if after:
+                runs.append((after, {}))
+            paras.append(runs)
+        else:
+            paras.append([(ln, {})])
+    return text(s, left, top, width, len(lines) * size / 72 * line + 0.5,
+                paras, font=DISPLAY, size=size, color=color, bold=True,
+                line=line, align=align)
 
 
-def head(s, label, title, *, size=H1, dark=False, top=2.05, width=CW):
+def head(s, label, title, *, size=H1, dark=False, top=2.05, width=CW,
+         accent=None):
     """Eyebrow plus headline: the opening of a content slide."""
     eyebrow(s, label, color=ON_INK_DIM if dark else MUTED)
-    headline(s, title, size=size, top=top, width=width,
-             color=PAPER if dark else INK)
+    headline(s, title, size=size, top=top, width=width, accent=accent,
+             dark=dark, color=PAPER if dark else INK)
 
 
 def lede(s, body, *, top, width=11.0, color=BODY, size=LEAD, left=M):

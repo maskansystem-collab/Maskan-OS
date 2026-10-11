@@ -18,7 +18,7 @@ BUILDERS = [
     a.s_title, a.s_problem, a.s_idea, a.s_dashboard, a.s_rent, a.s_cheques,
     a.s_statements, a.s_maintenance, a.s_leases, a.s_compliance, a.s_roles,
     b.s_manager, b.s_owner_portal, b.s_tenant_portal, b.s_ownership,
-    b.s_built, b.s_why_now, b.s_roadmap, b.s_pilot, b.s_close,
+    b.s_built, b.s_why_now, b.s_roadmap, b.s_close,
 ]
 
 # family -> (regular.ttf, bold.ttf)

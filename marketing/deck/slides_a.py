@@ -13,8 +13,8 @@ from pptx.enum.text import PP_ALIGN
 def s_title(prs, n):
     s = slide(prs, INK)
     logo(s, M, 1.30, 2.70, "paper")
-    headline(s, "Your entire rental\nportfolio. One place.",
-             size=92, top=3.70, color=PAPER, width=14.0, line=1.02)
+    headline(s, "Your entire rental\nportfolio. One place.", accent="One place.",
+             dark=True, size=92, top=3.70, color=PAPER, width=14.0, line=1.02)
     lede(s, "A rental operating system for Qatar. Owners, managers, tenants, "
             "leases, cheques and reporting in one connected place.",
          top=7.55, width=11.5, color=ON_INK, size=26)
@@ -55,6 +55,7 @@ def s_idea(prs, n):
     s = slide(prs, INK)
     eyebrow(s, f"{n - 1:02d} — The idea", color=ON_INK_DIM)
     headline(s, "Every event attached\nto the same record.",
+             accent="the same record.", dark=True,
              size=80, top=2.90, color=PAPER, line=1.04)
 
     chain = ["Owner", "Property", "Building", "Unit", "Tenant",
@@ -72,7 +73,7 @@ def s_idea(prs, n):
 def s_dashboard(prs, n):
     s = slide(prs)
     eyebrow(s, f"{n - 1:02d} — The workspace")
-    headline(s, "Monday morning, answered", size=H2, top=1.86)
+    headline(s, "Monday morning, answered", accent="answered", size=H2, top=1.86)
     caption(s, "Everything outstanding, everything expiring, everything "
                "awaiting a decision — on the screen that opens first.",
             top=2.90, size=23, color=BODY, width=13.0)
@@ -143,7 +144,7 @@ def s_cheques(prs, n):
 def s_statements(prs, n):
     s = slide(prs)
     eyebrow(s, f"{n - 1:02d} — Owner statements")
-    headline(s, "We show the workings", size=H2, top=1.86)
+    headline(s, "We show the workings", accent="the workings", size=H2, top=1.86)
 
     top = 3.40
     text(s, M, top, 7.6, 0.36, "STATEMENT · AUGUST 2026", size=LABEL,

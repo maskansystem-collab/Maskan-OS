@@ -92,6 +92,19 @@ conversation, not a slide — the plan tiers live in
 `supabase/migrations/0017_reference_data.sql` if a figure is needed for a
 specific proposal.
 
+## The lime accent
+
+`headline(..., accent="collected.")` picks one phrase out of a headline.
+How it renders depends on the background, and this is not a style choice:
+
+* **On ink**, pass `dark=True` and the accent becomes lime letterforms.
+* **On paper**, it becomes a marker-pen highlight behind ink text, because
+  lime on the paper background is roughly 1.2:1 contrast — lime type on a
+  light slide is not a subtle accent, it is unreadable.
+
+Use it on the payoff word and nowhere else. It currently falls on about
+every other slide; much more often and it stops meaning anything.
+
 ## Numbering
 
 Page numbers and section numbers both derive from a slide's position in

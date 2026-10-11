@@ -4,7 +4,7 @@ from kit import *
 from pptx.enum.text import PP_ALIGN
 
 
-def _portal(prs, n, label, title, lede_text, screens, shot):
+def _portal(prs, n, label, title, lede_text, screens, shot, accent=None):
     """Shared layout for the owner and tenant slides.
 
     The function index sits on the left in two columns and the product shot
@@ -13,7 +13,7 @@ def _portal(prs, n, label, title, lede_text, screens, shot):
     """
     s = slide(prs)
     eyebrow(s, f"{n - 1:02d} — {label}")
-    headline(s, title, size=H2, top=1.86)
+    headline(s, title, accent=accent, size=H2, top=1.86)
     caption(s, lede_text, top=2.90, size=22, color=BODY, width=9.0)
 
     LW = 8.00
@@ -76,7 +76,7 @@ def s_owner_portal(prs, n):
          ("Offers", "Accept or decline offers"),
          ("Vacancy", "What is empty, and since when"),
          ("Mandate", "The management agreement")],
-        "owner")
+        "owner", accent="their own login")
 
 
 def s_tenant_portal(prs, n):
@@ -91,7 +91,7 @@ def s_tenant_portal(prs, n):
          ("Maintenance", "Report an issue, follow it to close"),
          ("Documents", "QID, passport, receipts"),
          ("Messages", "One thread with the agent")],
-        "tenant")
+        "tenant", accent="stop calling")
 
 
 def s_ownership(prs, n):
@@ -135,7 +135,7 @@ def s_ownership(prs, n):
 def s_built(prs, n):
     s = slide(prs)
     eyebrow(s, f"{n - 1:02d} — What is built")
-    headline(s, "Built, not planned", size=H1, top=1.90)
+    headline(s, "Built, not planned", accent="Built", size=H1, top=1.90)
     caption(s, "Everything in this deck works today. Nothing here is waiting "
                "on a future release.",
             top=3.20, size=23, color=BODY, width=13.0)
@@ -218,43 +218,10 @@ def s_roadmap(prs, n):
     return s
 
 
-def s_pilot(prs, n):
-    s = slide(prs)
-    eyebrow(s, f"{n - 1:02d} — Pilot")
-    headline(s, "Start with 25 to 50 units", size=H1, top=1.90)
-
-    text(s, M, 4.60, 7.4, 0.40, "WE CONFIGURE", size=LABEL, color=MUTED,
-         track=140, bold=True)
-    listing(s, M, 5.15, 7.4,
-            ["Properties, units, owners and tenants",
-             "Active leases and payment schedules",
-             "Existing cheques and opening balances"],
-            size=22, gap=0.82)
-    text(s, M, 7.90, 7.4, 1.0,
-         "Maskan then runs alongside the current process. Nothing is "
-         "switched off.",
-         size=21, color=BODY, line=1.40)
-
-    rx, rw = M + 8.80, CW - 8.80
-    text(s, rx, 4.60, rw, 0.40, "YOU MEASURE", size=LABEL, color=MUTED,
-         track=140, bold=True)
-    listing(s, rx, 5.15, rw,
-            ['Time to answer "has the rent been paid"',
-             "Hours spent reconciling each month",
-             "Outstanding payments caught earlier",
-             "Maintenance closed with evidence",
-             "Renewals actioned before expiry"],
-            size=22, gap=0.82)
-    text(s, rx, 9.30, rw, 0.60, "If it holds up, expand the portfolio.",
-         font=DISPLAY, size=26, color=INK, bold=True)
-    page_mark(s, n)
-    return s
-
-
 def s_close(prs, n):
     s = slide(prs, INK)
-    headline(s, "Rent, collected.", size=108, top=3.60, color=PAPER,
-             width=14.0, line=1.0)
+    headline(s, "Rent, collected.", accent="collected.", dark=True,
+             size=108, top=3.60, color=PAPER, width=14.0, line=1.0)
     text(s, M, 5.90, 12.0, 1.40,
          "Your properties already produce this record every day. "
          "Maskan is where it finally adds up.",
