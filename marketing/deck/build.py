@@ -12,13 +12,13 @@ import slides_b as b                           # noqa: E402
 
 OUT = HERE / "Maskan-OS-deck.pptx"
 
+# The running order. Page numbers and section numbers both derive from a
+# slide's position here, so cutting one renumbers the rest automatically.
 BUILDERS = [
-    a.s01_title, a.s02_problem, a.s03_nine_places, a.s04_idea,
-    a.s05_dashboard, a.s06_rent, a.s07_cheques, a.s08_statements,
-    a.s09_maintenance, a.s10_leases, a.s11_compliance, a.s12_roles,
-    b.s13_manager, b.s14_owner_portal, b.s15_tenant_portal, b.s16_ownership,
-    b.s17_migration, b.s18_built, b.s19_plans, b.s20_why_now, b.s21_scope,
-    b.s22_roadmap, b.s23_pilot, b.s24_close,
+    a.s_title, a.s_problem, a.s_idea, a.s_dashboard, a.s_rent, a.s_cheques,
+    a.s_statements, a.s_maintenance, a.s_leases, a.s_compliance, a.s_roles,
+    b.s_manager, b.s_owner_portal, b.s_tenant_portal, b.s_ownership,
+    b.s_built, b.s_plans, b.s_why_now, b.s_roadmap, b.s_pilot, b.s_close,
 ]
 
 # family -> (regular.ttf, bold.ttf)
@@ -101,7 +101,7 @@ def embed_fonts(pptx: Path):
 def main():
     prs = new_deck()
     for i, fn in enumerate(BUILDERS, 1):
-        fn(prs)
+        fn(prs, i)
         print(f"  {i:2d}  {fn.__name__}")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     prs.save(OUT)

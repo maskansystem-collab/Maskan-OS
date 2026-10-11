@@ -1,10 +1,16 @@
-"""Slides 1-12: the problem, the idea, and the product itself."""
+"""Pages 1-11: the problem, the idea, and the product itself.
+
+Every builder takes the page number and derives its own section number from
+it, so removing or reordering a slide renumbers the deck automatically. The
+numbers used to be hardcoded in each function, which is a quiet way to hand
+a client a deck that jumps from 16 to 18.
+"""
 
 from kit import *
 from pptx.enum.text import PP_ALIGN
 
 
-def s01_title(prs):
+def s_title(prs, n):
     s = slide(prs, INK)
     logo(s, M, 1.30, 2.70, "paper")
     headline(s, "Your entire rental\nportfolio. One place.",
@@ -17,22 +23,14 @@ def s01_title(prs):
     return s
 
 
-def s02_problem(prs):
+def s_problem(prs, n):
+    """The statement and the nine places, which used to be two slides."""
     s = slide(prs)
-    eyebrow(s, "01 — The problem")
-    headline(s, "Owning property is simple.\nManaging it is not.",
-             size=84, top=3.30, line=1.04)
+    head(s, f"{n - 1:02d} — The problem",
+         "Owning property is simple.\nManaging it is not.", size=62, top=1.90)
     lede(s, "As a portfolio grows, one tenancy ends up recorded in nine "
             "different places — and none of them agree.",
-         top=7.40, width=13.0)
-    page_mark(s, 2)
-    return s
-
-
-def s03_nine_places(prs):
-    s = slide(prs)
-    eyebrow(s, "01 — The problem")
-    headline(s, "Nine places, one tenancy", size=H2, top=1.90)
+         top=4.25, width=13.0, size=24)
 
     places = ["Spreadsheets", "WhatsApp threads", "Email",
               "Bank statements", "Post-dated cheques", "Paper contracts",
@@ -40,23 +38,22 @@ def s03_nine_places(prs):
     w, xs = col(3, gap=0.9)
     for i, place in enumerate(places):
         x = xs[i % 3]
-        y = 3.60 + (i // 3) * 1.52
+        y = 5.75 + (i // 3) * 1.18
         rule(s, x, y, w, color=INK)
-        text(s, x, y + 0.30, w, 0.60, place, size=26, color=INK)
+        text(s, x, y + 0.26, w, 0.55, place, size=24, color=INK)
 
-    rule(s, M, 8.70, CW)
-    text(s, M, 9.10, CW, 0.70,
-         "So the owner has to ask: has the rent been paid, who is overdue, "
-         "which lease expires next, why QAR 3,500 was deducted, whether the "
-         "repair was finished.",
-         size=23, color=BODY, line=1.40)
-    page_mark(s, 3)
+    rule(s, M, 9.05, CW)
+    text(s, M, 9.40, CW, 0.60,
+         "So someone has to ask: has the rent been paid, who is overdue, "
+         "which lease expires next, why QAR 3,500 was deducted.",
+         size=21, color=BODY)
+    page_mark(s, n)
     return s
 
 
-def s04_idea(prs):
+def s_idea(prs, n):
     s = slide(prs, INK)
-    eyebrow(s, "02 — The idea", color=ON_INK_DIM)
+    eyebrow(s, f"{n - 1:02d} — The idea", color=ON_INK_DIM)
     headline(s, "Every event attached\nto the same record.",
              size=80, top=2.90, color=PAPER, line=1.04)
 
@@ -68,25 +65,25 @@ def s04_idea(prs):
         y = 7.30 + (i // 5) * 1.10
         rule(s, x, y, w, color=INK_SOFT, weight=0.012)
         text(s, x, y + 0.24, w, 0.46, item, size=22, color=PAPER)
-    page_mark(s, 4, dark=True)
+    page_mark(s, n, dark=True)
     return s
 
 
-def s05_dashboard(prs):
+def s_dashboard(prs, n):
     s = slide(prs)
-    eyebrow(s, "03 — The workspace")
+    eyebrow(s, f"{n - 1:02d} — The workspace")
     headline(s, "Monday morning, answered", size=H2, top=1.86)
     caption(s, "Everything outstanding, everything expiring, everything "
                "awaiting a decision — on the screen that opens first.",
             top=2.90, size=23, color=BODY, width=13.0)
     picture(s, "dashboard-wide", M, 4.15, CW, 6.40)
-    page_mark(s, 5)
+    page_mark(s, n)
     return s
 
 
-def s06_rent(prs):
+def s_rent(prs, n):
     s = slide(prs)
-    eyebrow(s, "04 — Rent tracking")
+    eyebrow(s, f"{n - 1:02d} — Rent tracking")
     headline(s, "Every riyal has a position", size=H2, top=1.86)
 
     top = 3.50
@@ -121,13 +118,13 @@ def s06_rent(prs):
          "Nothing reconciled by hand. Every figure traces from the tenant to "
          "the unit, the lease, the property and the owner statement.",
          size=21, color=BODY)
-    page_mark(s, 6)
+    page_mark(s, n)
     return s
 
 
-def s07_cheques(prs):
+def s_cheques(prs, n):
     s = slide(prs)
-    eyebrow(s, "05 — Payments")
+    eyebrow(s, f"{n - 1:02d} — Payments")
     headline(s, "Built for how Qatar\nactually pays rent.", size=62, top=2.00,
              width=7.6, line=1.06)
     text(s, M, 5.40, 7.2, 2.6,
@@ -139,13 +136,13 @@ def s07_cheques(prs):
          "Nothing about the way you collect rent has to change on day one.",
          font=DISPLAY, size=26, color=INK, bold=True, line=1.24)
     picture(s, "cheques", 9.55, 2.95, 9.05, 6.40)
-    page_mark(s, 7)
+    page_mark(s, n)
     return s
 
 
-def s08_statements(prs):
+def s_statements(prs, n):
     s = slide(prs)
-    eyebrow(s, "06 — Owner statements")
+    eyebrow(s, f"{n - 1:02d} — Owner statements")
     headline(s, "We show the workings", size=H2, top=1.86)
 
     top = 3.40
@@ -178,16 +175,16 @@ def s08_statements(prs):
          "accounting software.",
          size=22, color=BODY, line=1.44)
     picture(s, "statements", rx, top + 3.70, rw, 3.70, align="left")
-    page_mark(s, 8)
+    page_mark(s, n)
     return s
 
 
-def s09_maintenance(prs):
+def s_maintenance(prs, n):
     s = slide(prs)
-    eyebrow(s, "07 — Maintenance")
+    eyebrow(s, f"{n - 1:02d} — Maintenance")
     headline(s, "A work order, not a WhatsApp thread", size=H2, top=1.86)
-    caption(s, "Every repair carries its own evidence, from the tenant's "
-               "first photograph to the invoice on the owner's statement.",
+    caption(s, "Every repair carries its own evidence, from the first "
+               "photograph to the invoice on the owner's statement.",
             top=2.90, size=23, color=BODY, width=13.0)
 
     steps(s, M, 4.10, CW,
@@ -206,13 +203,13 @@ def s09_maintenance(prs):
          "The owner sees what happened, who handled it, which unit, what it "
          "cost and when it closed.",
          size=21, color=BODY)
-    page_mark(s, 9)
+    page_mark(s, n)
     return s
 
 
-def s10_leases(prs):
+def s_leases(prs, n):
     s = slide(prs)
-    eyebrow(s, "08 — Leases and renewals")
+    eyebrow(s, f"{n - 1:02d} — Leases and renewals")
     headline(s, "A renewal is not a surprise", size=H2, top=1.86)
 
     text(s, M, 3.40, 7.4, 0.40, "HELD AGAINST EVERY TENANCY", size=LABEL,
@@ -227,7 +224,7 @@ def s10_leases(prs):
     rw = CW - 8.80
     text(s, rx, 3.40, rw, 0.40, "EXPIRY FLAGGED AT", size=LABEL, color=MUTED,
          track=140, bold=True)
-    dw, dxs = (rw - 3 * 0.34) / 4, None
+    dw = (rw - 3 * 0.34) / 4
     for i, d in enumerate(["120", "90", "60", "30"]):
         x = rx + i * (dw + 0.34)
         rule(s, x, 4.10, dw, color=INK)
@@ -239,13 +236,13 @@ def s10_leases(prs):
          "…before the lease ends, with the renewal decision recorded against "
          "the tenancy rather than remembered by a person.",
          size=22, color=BODY, line=1.44)
-    page_mark(s, 10)
+    page_mark(s, n)
     return s
 
 
-def s11_compliance(prs):
+def s_compliance(prs, n):
     s = slide(prs)
-    eyebrow(s, "09 — Compliance")
+    eyebrow(s, f"{n - 1:02d} — Compliance")
     headline(s, "Documents ready\nbefore they are\nasked for.", size=58,
              top=1.95, width=8.2, line=1.08)
     text(s, M, 5.50, 7.6, 2.4,
@@ -268,24 +265,25 @@ def s11_compliance(prs):
              "Missing-document alerts", "Expiry tracking",
              "Renewal readiness"],
             size=23, gap=0.86)
-    page_mark(s, 11)
+    page_mark(s, n)
     return s
 
 
-def s12_roles(prs):
+def s_roles(prs, n):
     s = slide(prs)
-    eyebrow(s, "10 — Positioning")
+    eyebrow(s, f"{n - 1:02d} — Positioning")
     headline(s, "One system for the whole tenancy", size=H2, top=1.86)
 
-    # Four logins, not five: the platform console is Maskan's own furniture
-    # and means nothing to the agency buying this.
-    roles = [("Your staff", "Run the portfolio day to day",
+    # Role names carry no possessive. The reader may be the managing agent
+    # or may be the landlord themselves, and "your owners" shuts the second
+    # one out of their own deck.
+    roles = [("Staff", "Run the portfolio day to day",
               "Replaces the spreadsheet"),
-             ("Your owners", "See their own property and payout",
+             ("Owners", "See their own property and payout",
               "Replaces the monthly call"),
-             ("Your tenants", "Rent, lease, repairs and documents",
+             ("Tenants", "Rent, lease, repairs and documents",
               "Replaces the WhatsApp thread"),
-             ("Your vendors", "Take the job, close it with evidence",
+             ("Vendors", "Take the job, close it with evidence",
               "Replaces chasing by phone")]
     w, xs = col(4, gap=0.6)
     for x, (name, line1, line2) in zip(xs, roles):
@@ -298,9 +296,9 @@ def s12_roles(prs):
     rule(s, M, 7.95, CW, color=INK)
     text(s, M, 8.30, 12.0, 0.70, "Four logins. One set of records.",
          font=DISPLAY, size=32, color=INK, bold=True)
-    text(s, M, 9.20, 15.0, 0.60,
-         "A landlord signs in and sees their own property and nothing else. "
-         "So does every other landlord you manage for.",
+    text(s, M, 9.20, 15.5, 0.60,
+         "Each owner signs in and sees their own property and nothing else — "
+         "whether that is you, or landlords you manage for.",
          size=21, color=BODY)
-    page_mark(s, 12)
+    page_mark(s, n)
     return s

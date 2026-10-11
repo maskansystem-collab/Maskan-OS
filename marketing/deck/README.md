@@ -71,17 +71,34 @@ screenshot 14in wide silently becomes 8.8in tall and runs off the stage; and
 a literal `\n` inside a run does nothing in DrawingML, so `text()` splits
 lines into separate paragraphs itself.
 
-## Keeping the numbers true
+## Write for the buyer, not for the build
 
-Slides 12, 13, 14, 15, 18 and 19 state counts that come from the codebase and
-the schema, not from marketing:
+The deck once counted screens, tables and row-level security policies.
+Those are build metrics. Nobody buys "ten screens", and reciting them makes
+the product read as a software project rather than as something that
+collects rent. If a number cannot finish the sentence "…so you will…",
+it does not belong on a slide.
+
+The same applies to the possessive. "Your owners" assumes the reader is a
+managing agent; a landlord reading their own deck is then being told about
+someone else's owners. Role names stay neutral — staff, owners, tenants,
+vendors — and anything addressed at the owner says plainly that it works
+whether you own the portfolio or manage it for someone else.
+
+## Keeping the figures true
+
+The prices on the plans slide come from the schema, not from marketing:
 
 ```bash
-find app -name page.tsx | wc -l                      # screens  (slide 18: 57)
-grep -c '^create table'  supabase/migrations/*.sql   # tables   (slide 18: 70)
-grep -c '^create policy' supabase/migrations/*.sql   # policies (slide 18: 159)
 sed -n '/insert into plans/,/on conflict/p' \
-    supabase/migrations/0017_reference_data.sql      # plans    (slide 19)
+    supabase/migrations/0017_reference_data.sql
 ```
 
-If those change, change the slides.
+If those change, change the slide.
+
+## Numbering
+
+Page numbers and section numbers both derive from a slide's position in
+`BUILDERS`, so cutting or reordering a slide renumbers the deck. Nothing
+should ever hardcode either again — that is how a deck ends up jumping
+from 16 to 18 in front of a client.

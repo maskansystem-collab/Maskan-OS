@@ -1,22 +1,22 @@
-"""Slides 13-23: the portals, the proof, the commercials and the close."""
+"""Pages 12-21: the logins, the proof, the commercials and the close."""
 
 from kit import *
 from pptx.enum.text import PP_ALIGN
 
 
 def _portal(prs, n, label, title, lede_text, screens, shot):
-    """Shared layout for the portal slides.
+    """Shared layout for the owner and tenant slides.
 
-    The screen index sits on the left in two columns and the product shot
-    takes the right half. Stacking the shot underneath a full-width index,
-    as the first cut did, left it either tiny or off the bottom of the stage.
+    The function index sits on the left in two columns and the product shot
+    takes the right half. Stacking the shot under a full-width index left it
+    either tiny or off the bottom of the stage.
     """
     s = slide(prs)
-    eyebrow(s, label)
+    eyebrow(s, f"{n - 1:02d} — {label}")
     headline(s, title, size=H2, top=1.86)
     caption(s, lede_text, top=2.90, size=22, color=BODY, width=9.0)
 
-    LW = 8.00                       # the index column
+    LW = 8.00
     cw = (LW - 0.5) / 2
     for i, (name, desc) in enumerate(screens):
         x = M + (i % 2) * (cw + 0.5)
@@ -25,15 +25,14 @@ def _portal(prs, n, label, title, lede_text, screens, shot):
         text(s, x, y + 0.20, cw, 0.40, name, size=20, color=INK, bold=True)
         text(s, x, y + 0.64, cw, 0.50, desc, size=16, color=MUTED, line=1.24)
 
-    rx = M + LW + 1.00
-    picture(s, shot, rx, 4.05, CW - LW - 1.00, 6.20, align="left")
+    picture(s, shot, M + LW + 1.00, 4.05, CW - LW - 1.00, 6.20, align="left")
     page_mark(s, n)
     return s
 
 
-def s13_manager(prs):
+def s_manager(prs, n):
     s = slide(prs)
-    eyebrow(s, "11 — The manager workspace")
+    eyebrow(s, f"{n - 1:02d} — The workspace")
     headline(s, "Everything the agency does in a day", size=H2, top=1.86)
 
     groups = [("Portfolio", ["Properties", "Buildings", "Units", "Vacancy",
@@ -55,18 +54,18 @@ def s13_manager(prs):
 
     rule(s, M, 9.30, CW, color=INK)
     text(s, M, 9.64, CW, 0.60,
-         "One place for the work your staff already do — and no second system "
+         "One place for the work already being done — and no second system "
          "to keep in step with it.",
          size=21, color=BODY)
-    page_mark(s, 13)
+    page_mark(s, n)
     return s
 
 
-def s14_owner_portal(prs):
+def s_owner_portal(prs, n):
     return _portal(
-        prs, 14, "12 — Owner portal", "Your owners stop calling for updates",
-        "Give every landlord you manage for their own login. They see their "
-        "property, their money and their documents — never your workings.",
+        prs, n, "Owner portal", "Every owner gets their own login",
+        "Whether you own the portfolio or manage it for someone else, each "
+        "owner signs in to their own property, money and documents.",
         [("Overview", "Occupancy, rent, outstanding"),
          ("Properties", "Buildings, units, tenancies"),
          ("Finance", "Income, expenses, transactions"),
@@ -80,11 +79,11 @@ def s14_owner_portal(prs):
         "owner")
 
 
-def s15_tenant_portal(prs):
+def s_tenant_portal(prs, n):
     return _portal(
-        prs, 15, "13 — Tenant portal", "Your tenants stop calling the office",
-        "What is due, what is paid, what is being repaired — answered without "
-        "anyone at the agency picking up the phone.",
+        prs, n, "Tenant portal", "Tenants stop calling the office",
+        "What is due, what is paid, what is being repaired — answered "
+        "without anyone picking up the phone.",
         [("Home", "What is due and what is open"),
          ("Rent", "Every instalment, paid and upcoming"),
          ("Lease", "Dates, rent, deposit, renewal"),
@@ -95,9 +94,9 @@ def s15_tenant_portal(prs):
         "tenant")
 
 
-def s16_ownership(prs):
+def s_ownership(prs, n):
     s = slide(prs)
-    eyebrow(s, "14 — Ownership structures")
+    eyebrow(s, f"{n - 1:02d} — Ownership structures")
     headline(s, "Split at the share,\nnot the spreadsheet.", size=52,
              top=1.95, width=8.4, line=1.10)
     text(s, M, 5.00, 7.8, 2.2,
@@ -129,55 +128,21 @@ def s16_ownership(prs):
         text(s, rx, y + 1.06, rw, 0.40,
              f"{int(pct * 100)}% share · own statement, own login",
              size=SMALL, color=MUTED)
-    page_mark(s, 16)
+    page_mark(s, n)
     return s
 
 
-def s17_migration(prs):
+def s_built(prs, n):
     s = slide(prs)
-    eyebrow(s, "15 — Migration")
-    headline(s, "Give us the files you already have", size=H2, top=1.86)
-    caption(s, "The migration centre takes your existing records as they are.",
-            top=2.90, size=23, color=BODY, width=13.0)
-
-    items = ["Properties", "Buildings", "Units", "Owners", "Tenants",
-             "Leases", "Cheques", "Deposits", "Outstanding balances",
-             "Opening owner balances"]
-    w, xs = col(5, gap=0.46)
-    for i, it in enumerate(items):
-        x = xs[i % 5]
-        y = 4.05 + (i // 5) * 1.30
-        rule(s, x, y, w, color=HAIRLINE)
-        text(s, x, y + 0.24, w, 0.60, it, size=21, color=INK)
-
-    rule(s, M, 7.40, CW, color=INK)
-    text(s, M, 7.78, 8.4, 1.40,
-         "Then Maskan reconciles what it loaded against your own totals, "
-         "line by line, before you rely on it.",
-         font=DISPLAY, size=28, color=INK, bold=True, line=1.26)
-
-    rx = M + 9.60
-    rw = CW - 9.60
-    pairs(s, rx, 7.80, rw,
-          [("Your records", "QAR 428,500", INK),
-           ("Maskan", "QAR 428,500", INK),
-           ("Variance", "0.00", GREEN)],
-          size=22, gap=0.74, val_font=DISPLAY, key_w=rw * 0.5)
-    page_mark(s, 17)
-    return s
-
-
-def s18_built(prs):
-    s = slide(prs)
-    eyebrow(s, "16 — What is built")
+    eyebrow(s, f"{n - 1:02d} — What is built")
     headline(s, "Built, not planned", size=H1, top=1.90)
     caption(s, "Everything in this deck works today. Nothing here is waiting "
                "on a future release.",
             top=3.20, size=23, color=BODY, width=13.0)
 
     # Counts of screens, tables and security policies were in the first cut.
-    # They are build metrics: an agency buys outcomes and reassurance, so
-    # these are the four questions a property manager actually asks.
+    # Those are build metrics; these are the four questions a property
+    # company actually asks before signing.
     items = [("Your records stay yours",
               "One agency cannot see another's tenancies, owners or money. "
               "That separation sits in the database itself, not in the screen."),
@@ -196,13 +161,13 @@ def s18_built(prs):
         text(s, x, 5.02, w, 1.10, title, font=DISPLAY, size=25, color=INK,
              bold=True, line=1.18)
         text(s, x, 6.30, w, 2.6, bodytext, size=20, color=BODY, line=1.42)
-    page_mark(s, 18)
+    page_mark(s, n)
     return s
 
 
-def s19_plans(prs):
+def s_plans(prs, n):
     s = slide(prs)
-    eyebrow(s, "17 — Plans")
+    eyebrow(s, f"{n - 1:02d} — Plans")
     headline(s, "Priced by the size of the portfolio", size=H2, top=1.86)
 
     plans = [("Trial", "0", "25 units", "3 users"),
@@ -233,13 +198,13 @@ def s19_plans(prs):
          "Online payments from Starter. WhatsApp notifications and advanced "
          "reporting from Growth. White-label on Enterprise.",
          size=21, color=BODY, line=1.40)
-    page_mark(s, 19)
+    page_mark(s, n)
     return s
 
 
-def s20_why_now(prs):
+def s_why_now(prs, n):
     s = slide(prs, INK)
-    eyebrow(s, "18 — Why now", color=ON_INK_DIM)
+    eyebrow(s, f"{n - 1:02d} — Why now", color=ON_INK_DIM)
     text(s, M, 2.90, 13.0, 2.60, "35,917", font=DISPLAY, size=FIG_XL,
          color=LIME, bold=True, line=1.0)
     text(s, M, 5.70, 12.5, 1.60,
@@ -254,45 +219,13 @@ def s20_why_now(prs):
     text(s, M + 9.4, 8.30, CW - 9.4, 1.60,
          "The gap is not listings. It is the operations behind every tenancy.",
          font=DISPLAY, size=28, color=PAPER, bold=True, line=1.28)
-    page_mark(s, 20, dark=True)
+    page_mark(s, n, dark=True)
     return s
 
 
-def s21_scope(prs):
+def s_roadmap(prs, n):
     s = slide(prs)
-    eyebrow(s, "19 — Scope")
-    headline(s, "What Maskan is not", size=H1, top=1.90)
-
-    items = [("Not your bank",
-              "Payments are processed by authorised financial providers. "
-              "We record and reconcile them."),
-             ("Not your accountant",
-              "Maskan feeds your accounting and ERP software instead of "
-              "replacing it."),
-             ("Not the government",
-              "Official lease registration remains with the relevant "
-              "authorities."),
-             ("Not a listing site",
-              "We start at the operation of the property, not the advert "
-              "for it.")]
-    w, xs = col(4, gap=0.6)
-    for x, (title, body) in zip(xs, items):
-        rule(s, x, 4.50, w, color=INK)
-        text(s, x, 4.82, w, 1.10, title, font=DISPLAY, size=27, color=INK,
-             bold=True, line=1.18)
-        text(s, x, 6.15, w, 2.2, body, size=21, color=BODY, line=1.42)
-
-    text(s, M, 9.30, CW, 0.60,
-         "A narrow product that does the operational job completely, and "
-         "hands off cleanly everywhere else.",
-         size=21, color=MUTED)
-    page_mark(s, 21)
-    return s
-
-
-def s22_roadmap(prs):
-    s = slide(prs)
-    eyebrow(s, "20 — Roadmap")
+    eyebrow(s, f"{n - 1:02d} — Roadmap")
     headline(s, "Operations first, then the lifecycle", size=H2, top=1.86)
 
     phases = [("Live", "Maskan Core", "Leases, rent, maintenance, statements"),
@@ -318,13 +251,13 @@ def s22_roadmap(prs):
     text(s, M, 9.70, 13.0, 0.50,
          "Each phase extends the same record rather than starting a new one.",
          size=21, color=BODY)
-    page_mark(s, 22)
+    page_mark(s, n)
     return s
 
 
-def s23_pilot(prs):
+def s_pilot(prs, n):
     s = slide(prs)
-    eyebrow(s, "21 — Pilot")
+    eyebrow(s, f"{n - 1:02d} — Pilot")
     headline(s, "Start with 25 to 50 units", size=H1, top=1.90)
 
     text(s, M, 4.60, 7.4, 0.40, "WE CONFIGURE", size=LABEL, color=MUTED,
@@ -335,7 +268,7 @@ def s23_pilot(prs):
              "Existing cheques and opening balances"],
             size=22, gap=0.82)
     text(s, M, 7.90, 7.4, 1.0,
-         "Maskan then runs alongside your current process. Nothing is "
+         "Maskan then runs alongside the current process. Nothing is "
          "switched off.",
          size=21, color=BODY, line=1.40)
 
@@ -351,11 +284,11 @@ def s23_pilot(prs):
             size=22, gap=0.82)
     text(s, rx, 9.30, rw, 0.60, "If it holds up, expand the portfolio.",
          font=DISPLAY, size=26, color=INK, bold=True)
-    page_mark(s, 23)
+    page_mark(s, n)
     return s
 
 
-def s24_close(prs):
+def s_close(prs, n):
     s = slide(prs, INK)
     headline(s, "Rent, collected.", size=108, top=3.60, color=PAPER,
              width=14.0, line=1.0)
