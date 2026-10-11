@@ -382,3 +382,288 @@ export async function listAdminSubscriptions(): Promise<AdminSubscriptionRow[]> 
     };
   });
 }
+
+/* ------------------------------------------------------------------ */
+/* Platform screens: integrations, settings, support, market          */
+/* ------------------------------------------------------------------ */
+
+export interface PlatformIntegrationRow {
+  providerType: string;
+  /** Organisations with this provider connected and active. */
+  connected: number;
+  inactive: number;
+  totalOrganisations: number;
+  /** Whether the server has credentials configured for it at all. */
+  configuredOnServer: boolean;
+}
+
+/**
+ * Which integrations are actually in use across the platform.
+ *
+ * Read from integration_connections rather than a separate registry, so
+ * "connected" means a row exists, not that somebody ticked a box.
+ */
+export async function listPlatformIntegrations(
+  configured: Record<string, boolean>
+): Promise<PlatformIntegrationRow[]> {
+  const admin = createAdminClient();
+
+  const [{ count: orgCount }, { data: connections }] = await Promise.all([
+    admin.from("organisations").select("id", { count: "exact", head: true }),
+    admin.from("integration_connections").select("provider_type, is_active"),
+  ]);
+
+  const types = [
+    ...new Set([...(connections ?? []).map((c) => c.provider_type), ...Object.keys(configured)]),
+  ].sort();
+
+  return types.map((type) => {
+    const mine = (connections ?? []).filter((c) => c.provider_type === type);
+    return {
+      providerType: type,
+      connected: mine.filter((c) => c.is_active).length,
+      inactive: mine.filter((c) => !c.is_active).length,
+      totalOrganisations: orgCount ?? 0,
+      configuredOnServer: configured[type] ?? false,
+    };
+  });
+}
+
+export interface PlatformSettingRow {
+  id: string;
+  key: string;
+  value: unknown;
+  /** Null organisation_id means it applies to the whole platform. */
+  isGlobal: boolean;
+  organisationName: string | null;
+}
+
+/**
+ * Platform settings.
+ *
+ * app_settings takes a null organisation_id for exactly this, so there is
+ * no separate platform settings table: a global row is one with no
+ * organisation, and an override is the same key with one.
+ */
+export async function listPlatformSettings(): Promise<PlatformSettingRow[]> {
+  const admin = createAdminClient();
+
+  const { data } = await admin
+    .from("app_settings")
+    .select("id, key, value, organisation_id, organisations ( name )")
+    .order("key");
+
+  const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? (v[0] ?? null) : v);
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    key: row.key,
+    value: row.value,
+    isGlobal: row.organisation_id === null,
+    organisationName: one(row.organisations)?.name ?? null,
+  }));
+}
+
+export interface PlatformFeatureFlagRow {
+  key: string;
+  globalDefault: boolean | null;
+  enabledFor: number;
+  disabledFor: number;
+}
+
+export async function listPlatformFeatureFlags(): Promise<PlatformFeatureFlagRow[]> {
+  const admin = createAdminClient();
+  const { data } = await admin.from("feature_flags").select("key, is_enabled, organisation_id");
+
+  const keys = [...new Set((data ?? []).map((f) => f.key))].sort();
+  return keys.map((key) => {
+    const mine = (data ?? []).filter((f) => f.key === key);
+    const global = mine.find((f) => f.organisation_id === null);
+    const scoped = mine.filter((f) => f.organisation_id !== null);
+    return {
+      key,
+      globalDefault: global ? global.is_enabled : null,
+      enabledFor: scoped.filter((f) => f.is_enabled).length,
+      disabledFor: scoped.filter((f) => !f.is_enabled).length,
+    };
+  });
+}
+
+export interface SupportNoteRow {
+  id: string;
+  organisationId: string;
+  organisationName: string;
+  author_name: string;
+  body: string;
+  category: string | null;
+  follow_up_on: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+export async function listSupportNotes(
+  filters: { show?: string } = {}
+): Promise<SupportNoteRow[]> {
+  const admin = createAdminClient();
+
+  const { data } = await admin
+    .from("support_notes")
+    .select(
+      `id, organisation_id, author_name, body, category, follow_up_on, resolved_at,
+       created_at, organisations!inner ( name )`
+    )
+    .order("created_at", { ascending: false });
+
+  const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? (v[0] ?? null) : v);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const rows: SupportNoteRow[] = (data ?? []).map((n) => ({
+    id: n.id,
+    organisationId: n.organisation_id,
+    organisationName: one(n.organisations)?.name ?? "—",
+    author_name: n.author_name,
+    body: n.body,
+    category: n.category,
+    follow_up_on: n.follow_up_on,
+    resolved_at: n.resolved_at,
+    created_at: n.created_at,
+  }));
+
+  if (filters.show === "open") return rows.filter((n) => !n.resolved_at);
+  if (filters.show === "due") {
+    return rows.filter((n) => !n.resolved_at && n.follow_up_on && n.follow_up_on <= today);
+  }
+  return rows;
+}
+
+export interface MarketSegment {
+  area: string;
+  unitType: string;
+  /** How many leases the figures rest on. Under ten is not a benchmark. */
+  n: number;
+  median: number;
+  low: number;
+  high: number;
+}
+
+export interface MarketIntelligence {
+  consent: {
+    organisationId: string;
+    organisationName: string;
+    consent: string;
+    consentAt: string | null;
+    units: number;
+    contributing: number;
+  }[];
+  segments: MarketSegment[];
+  coverage: {
+    contributingUnits: number;
+    allUnits: number;
+    consentingOrganisations: number;
+    totalOrganisations: number;
+    leases: number;
+    thinSegments: number;
+  };
+}
+
+/** Below this, a segment is too thin to show anybody as a benchmark. */
+export const MIN_SEGMENT_SIZE = 10;
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+/**
+ * Achieved rents, pooled from organisations that agreed to contribute.
+ *
+ * Every figure is computed from leases that already exist — nothing is
+ * stored, so a benchmark cannot disagree with the leases behind it. Only
+ * consent is stored, and an organisation that has not been asked
+ * contributes nothing.
+ */
+export async function getMarketIntelligence(): Promise<MarketIntelligence> {
+  const admin = createAdminClient();
+
+  const [{ data: organisations }, { data: units }] = await Promise.all([
+    admin.from("organisations").select("id, name, market_consent, market_consent_at").order("name"),
+    admin
+      .from("units")
+      .select("id, organisation_id, unit_type, property_id, properties!inner ( area )")
+      .is("archived_at", null),
+  ]);
+
+  const orgs = organisations ?? [];
+  const consenting = orgs.filter((o) => o.market_consent === "granted").map((o) => o.id);
+
+  const { data: leases } = consenting.length
+    ? await admin
+        .from("leases")
+        .select("unit_id, monthly_rent, organisation_id, status")
+        .in("organisation_id", consenting)
+        .in("status", ["active", "expiring", "renewal_offered", "renewed"])
+    : { data: [] as { unit_id: string; monthly_rent: number }[] };
+
+  const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? (v[0] ?? null) : v);
+
+  const unitById = new Map(
+    (units ?? []).map((u) => [
+      u.id,
+      { area: one(u.properties)?.area ?? null, unitType: u.unit_type, orgId: u.organisation_id },
+    ])
+  );
+
+  // Group the contributing leases by district and unit type.
+  const buckets = new Map<string, number[]>();
+  let contributingUnits = 0;
+  for (const l of leases ?? []) {
+    const u = unitById.get(l.unit_id);
+    if (!u || !u.area || !u.unitType) continue;
+    contributingUnits += 1;
+    const key = `${u.area}||${u.unitType}`;
+    const list = buckets.get(key) ?? [];
+    list.push(Number(l.monthly_rent));
+    buckets.set(key, list);
+  }
+
+  const segments: MarketSegment[] = [...buckets.entries()]
+    .map(([key, rents]) => {
+      const [area, unitType] = key.split("||");
+      return {
+        area,
+        unitType,
+        n: rents.length,
+        median: median(rents),
+        low: Math.min(...rents),
+        high: Math.max(...rents),
+      };
+    })
+    .sort((a, b) => a.area.localeCompare(b.area) || a.unitType.localeCompare(b.unitType));
+
+  const unitsPerOrg = new Map<string, number>();
+  for (const u of units ?? []) {
+    unitsPerOrg.set(u.organisation_id, (unitsPerOrg.get(u.organisation_id) ?? 0) + 1);
+  }
+
+  return {
+    consent: orgs.map((o) => ({
+      organisationId: o.id,
+      organisationName: o.name,
+      consent: o.market_consent,
+      consentAt: o.market_consent_at,
+      units: unitsPerOrg.get(o.id) ?? 0,
+      contributing: o.market_consent === "granted" ? (unitsPerOrg.get(o.id) ?? 0) : 0,
+    })),
+    segments,
+    coverage: {
+      contributingUnits,
+      allUnits: (units ?? []).length,
+      consentingOrganisations: consenting.length,
+      totalOrganisations: orgs.length,
+      leases: (leases ?? []).length,
+      thinSegments: segments.filter((s) => s.n < MIN_SEGMENT_SIZE).length,
+    },
+  };
+}

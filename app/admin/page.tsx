@@ -1,4 +1,6 @@
-import { Building2, CreditCard, Layers, TrendingUp, Users } from "lucide-react";
+import {
+  BarChart3, Building2, CreditCard, Headphones, Layers, Plug, TrendingUp, Users,
+} from "lucide-react";
 import Link from "next/link";
 import { requirePlatformSuperAdmin } from "@/lib/permissions/guards";
 import {
@@ -78,14 +80,22 @@ export default async function AdminPage({
         />
       </div>
 
-      <div className="mb-6">
-        <Link
-          href="/admin/subscriptions"
-          className="inline-flex items-center gap-2 rounded-[10px] border border-neutral-200 bg-white px-3.5 py-2 text-[13px] font-medium text-neutral-900 transition-colors hover:border-neutral-300"
-        >
-          <CreditCard className="h-4 w-4 text-neutral-400" />
-          Subscriptions and plan usage
-        </Link>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {([
+          ["/admin/subscriptions", "Subscriptions and plan usage", CreditCard],
+          ["/admin/platform", "Platform configuration", Plug],
+          ["/admin/market", "Market intelligence", BarChart3],
+          ["/admin/support", "Support", Headphones],
+        ] as [string, string, typeof CreditCard][]).map(([href, label, Icon]) => (
+          <Link
+            key={href}
+            href={href}
+            className="inline-flex items-center gap-2 rounded-[10px] border border-neutral-200 bg-white px-3.5 py-2 text-[13px] font-medium text-neutral-900 transition-colors hover:border-neutral-300"
+          >
+            <Icon className="h-4 w-4 text-neutral-400" />
+            {label}
+          </Link>
+        ))}
       </div>
 
       <Tabs defaultValue="organisations">

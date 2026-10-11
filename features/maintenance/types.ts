@@ -24,4 +24,14 @@ export interface VendorJobRow {
   property_name: string;
   unit_number: string;
   access_notes: string | null;
+  /** The category the request was filed under. */
+  category?: string | null;
+  // Completion and sign-off, added by 0021. The person who accepts the
+  // work on site is usually the tenant, who has no login, so the
+  // signature is a name rather than a profile.
+  completed_at?: string | null;
+  completion_notes?: string | null;
+  parts_used?: string | null;
+  signed_off_name?: string | null;
+  signed_off_at?: string | null;
 }

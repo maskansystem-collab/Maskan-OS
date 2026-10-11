@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3, Building2, CheckCircle2, ChevronRight, ChevronsUpDown,
-  FileText, LayoutDashboard, Settings, Wallet, Wrench,
+  FileText, LayoutDashboard, Scale, Settings, Wallet, Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { MaskanLogo } from "@/components/brand/logo";
@@ -42,6 +42,9 @@ const NAV: Section[] = [
       { href: "/leasing", label: "Pipeline" },
       { href: "/offers", label: "Offers" },
       { href: "/leases", label: "Leases" },
+      { href: "/renewals", label: "Renewals" },
+      { href: "/move-ins", label: "Move-ins" },
+      { href: "/contracts", label: "Contracts" },
       { href: "/tenants", label: "Tenants" },
       { href: "/undertakings", label: "Undertakings" },
     ],
@@ -63,7 +66,7 @@ const NAV: Section[] = [
   { kind: "group", label: "Operations", icon: Wrench,
     items: [
       { href: "/maintenance", label: "Maintenance" },
-      { href: "/vendors", label: "Vendors" },
+      { href: "/parties", label: "People and providers" },
       { href: "/documents", label: "Documents" },
       { href: "/import", label: "Import" },
     ] },
@@ -78,6 +81,7 @@ const NAV: Section[] = [
   {
     kind: "loose",
     items: [
+      { href: "/departments", label: "Departments", icon: Scale },
       { href: "/reports", label: "Reports", icon: BarChart3 },
       { href: "/settings", label: "Settings", icon: Settings },
     ],

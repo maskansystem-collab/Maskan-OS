@@ -300,7 +300,9 @@ export async function listVendorJobs(vendorId: string): Promise<VendorJobRow[]> 
     .from("work_orders")
     .select(
       `id, status, scheduled_at, estimated_cost, approved_amount, actual_amount, instructions, maintenance_request_id,
-       maintenance_requests ( id, request_code, description, priority, access_notes, properties ( name ), units ( unit_number ) )`
+       completed_at, completion_notes, parts_used, signed_off_name, signed_off_at,
+       maintenance_requests ( id, request_code, description, priority, access_notes,
+         properties ( name ), units ( unit_number ), maintenance_categories ( name ) )`
     )
     .eq("vendor_id", vendorId)
     .order("created_at", { ascending: false });
@@ -313,6 +315,11 @@ export async function listVendorJobs(vendorId: string): Promise<VendorJobRow[]> 
       : null;
     const unit = request && "units" in request
       ? (Array.isArray(request.units) ? request.units[0] : request.units)
+      : null;
+    const category = request && "maintenance_categories" in request
+      ? (Array.isArray(request.maintenance_categories)
+          ? request.maintenance_categories[0]
+          : request.maintenance_categories)
       : null;
 
     return {
@@ -330,6 +337,12 @@ export async function listVendorJobs(vendorId: string): Promise<VendorJobRow[]> 
       property_name: property?.name ?? "—",
       unit_number: unit?.unit_number ?? "—",
       access_notes: request?.access_notes ?? null,
+      category: category?.name ?? null,
+      completed_at: wo.completed_at,
+      completion_notes: wo.completion_notes,
+      parts_used: wo.parts_used,
+      signed_off_name: wo.signed_off_name,
+      signed_off_at: wo.signed_off_at,
     };
   });
 }
