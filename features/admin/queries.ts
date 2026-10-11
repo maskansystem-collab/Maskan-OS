@@ -299,3 +299,86 @@ export async function listPlatformAudit(q?: string) {
     metadata: r.metadata,
   }));
 }
+
+export interface AdminSubscriptionRow {
+  organisationId: string;
+  organisationName: string;
+  status: string;
+  subscriptionStatus: string | null;
+  planName: string | null;
+  planKey: string | null;
+  trial_ends_at: string | null;
+  current_period_end: string | null;
+  units: number;
+  users: number;
+  maxUnits: number | null;
+  maxUsers: number | null;
+  /** True when the organisation is past a limit its plan sets. */
+  overUnits: boolean;
+  overUsers: boolean;
+}
+
+/**
+ * Every organisation's plan and its usage against that plan's limits.
+ *
+ * The question this screen answers is "who has outgrown what they pay
+ * for", so the limits and the usage sit side by side and anything over is
+ * marked. Four queries whatever the number of organisations.
+ */
+export async function listAdminSubscriptions(): Promise<AdminSubscriptionRow[]> {
+  const admin = createAdminClient();
+
+  const { data: organisations } = await admin
+    .from("organisations")
+    .select("id, name, status")
+    .order("name");
+
+  const orgs = organisations ?? [];
+  const ids = orgs.map((o) => o.id);
+  if (ids.length === 0) return [];
+
+  const [subs, units, members] = await Promise.all([
+    admin
+      .from("organisation_subscriptions")
+      .select(
+        `organisation_id, status, trial_ends_at, current_period_end,
+         plans ( key, name, max_units, max_users )`
+      )
+      .in("organisation_id", ids),
+    admin.from("units").select("organisation_id").in("organisation_id", ids).is("archived_at", null),
+    admin.from("organisation_members").select("organisation_id").in("organisation_id", ids),
+  ]);
+
+  function tally(rows: { organisation_id: string }[] | null) {
+    const map = new Map<string, number>();
+    for (const row of rows ?? []) map.set(row.organisation_id, (map.get(row.organisation_id) ?? 0) + 1);
+    return map;
+  }
+
+  const unitCounts = tally(units.data);
+  const userCounts = tally(members.data);
+  const subByOrg = new Map((subs.data ?? []).map((s) => [s.organisation_id, s]));
+
+  return orgs.map((o) => {
+    const sub = subByOrg.get(o.id);
+    const plan = sub ? (Array.isArray(sub.plans) ? sub.plans[0] : sub.plans) : null;
+    const unitCount = unitCounts.get(o.id) ?? 0;
+    const userCount = userCounts.get(o.id) ?? 0;
+    return {
+      organisationId: o.id,
+      organisationName: o.name,
+      status: o.status,
+      subscriptionStatus: sub?.status ?? null,
+      planName: plan?.name ?? null,
+      planKey: plan?.key ?? null,
+      trial_ends_at: sub?.trial_ends_at ?? null,
+      current_period_end: sub?.current_period_end ?? null,
+      units: unitCount,
+      users: userCount,
+      maxUnits: plan?.max_units ?? null,
+      maxUsers: plan?.max_users ?? null,
+      overUnits: plan?.max_units != null && unitCount > plan.max_units,
+      overUsers: plan?.max_users != null && userCount > plan.max_users,
+    };
+  });
+}
