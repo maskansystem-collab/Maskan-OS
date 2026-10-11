@@ -277,26 +277,30 @@ def s12_roles(prs):
     eyebrow(s, "10 — Positioning")
     headline(s, "One system for the whole tenancy", size=H2, top=1.86)
 
-    roles = [("Manager", "Operate the portfolio", "30 screens"),
-             ("Owner", "Understand the asset", "10 screens"),
-             ("Tenant", "Everything about the home", "7 screens"),
-             ("Vendor", "Manage the work", "Assigned jobs"),
-             ("Platform", "Operate the service", "Admin console")]
-    w, xs = col(5, gap=0.52)
+    # Four logins, not five: the platform console is Maskan's own furniture
+    # and means nothing to the agency buying this.
+    roles = [("Your staff", "Run the portfolio day to day",
+              "Replaces the spreadsheet"),
+             ("Your owners", "See their own property and payout",
+              "Replaces the monthly call"),
+             ("Your tenants", "Rent, lease, repairs and documents",
+              "Replaces the WhatsApp thread"),
+             ("Your vendors", "Take the job, close it with evidence",
+              "Replaces chasing by phone")]
+    w, xs = col(4, gap=0.6)
     for x, (name, line1, line2) in zip(xs, roles):
         rule(s, x, 3.80, w, color=INK)
         text(s, x, 4.10, w, 0.60, name, font=DISPLAY, size=30, color=INK,
              bold=True)
         text(s, x, 4.95, w, 1.40, line1, size=21, color=BODY, line=1.30)
-        text(s, x, 6.55, w, 0.40, line2.upper(), size=LABEL, color=MUTED,
-             track=120, bold=True)
+        text(s, x, 6.70, w, 0.80, line2, size=SMALL, color=MUTED, line=1.30)
 
     rule(s, M, 7.95, CW, color=INK)
-    text(s, M, 8.30, 11.0, 0.70, "Five views. One ledger underneath.",
+    text(s, M, 8.30, 12.0, 0.70, "Four logins. One set of records.",
          font=DISPLAY, size=32, color=INK, bold=True)
-    text(s, M, 9.20, 14.0, 0.60,
-         "Every role reads the same records. Row-level security in the "
-         "database decides which of them each person can see.",
+    text(s, M, 9.20, 15.0, 0.60,
+         "A landlord signs in and sees their own property and nothing else. "
+         "So does every other landlord you manage for.",
          size=21, color=BODY)
     page_mark(s, 12)
     return s

@@ -34,7 +34,7 @@ def _portal(prs, n, label, title, lede_text, screens, shot):
 def s13_manager(prs):
     s = slide(prs)
     eyebrow(s, "11 — The manager workspace")
-    headline(s, "Thirty screens, four jobs", size=H2, top=1.86)
+    headline(s, "Everything the agency does in a day", size=H2, top=1.86)
 
     groups = [("Portfolio", ["Properties", "Buildings", "Units", "Vacancy",
                              "Owners"]),
@@ -55,8 +55,8 @@ def s13_manager(prs):
 
     rule(s, M, 9.30, CW, color=INK)
     text(s, M, 9.64, CW, 0.60,
-         "One workspace for the agency. The owner, the tenant and the vendor "
-         "each get their own, reading the same records.",
+         "One place for the work your staff already do — and no second system "
+         "to keep in step with it.",
          size=21, color=BODY)
     page_mark(s, 13)
     return s
@@ -64,8 +64,9 @@ def s13_manager(prs):
 
 def s14_owner_portal(prs):
     return _portal(
-        prs, 14, "12 — Owner portal", "Ten screens. Nothing else.",
-        "The owner signs in and sees the asset — never the agency's workings.",
+        prs, 14, "12 — Owner portal", "Your owners stop calling for updates",
+        "Give every landlord you manage for their own login. They see their "
+        "property, their money and their documents — never your workings.",
         [("Overview", "Occupancy, rent, outstanding"),
          ("Properties", "Buildings, units, tenancies"),
          ("Finance", "Income, expenses, transactions"),
@@ -81,8 +82,9 @@ def s14_owner_portal(prs):
 
 def s15_tenant_portal(prs):
     return _portal(
-        prs, 15, "13 — Tenant portal", "Seven screens for the home",
-        "The tenant answers their own questions instead of calling the office.",
+        prs, 15, "13 — Tenant portal", "Your tenants stop calling the office",
+        "What is due, what is paid, what is being repaired — answered without "
+        "anyone at the agency picking up the phone.",
         [("Home", "What is due and what is open"),
          ("Rent", "Every instalment, paid and upcoming"),
          ("Lease", "Dates, rent, deposit, renewal"),
@@ -168,27 +170,32 @@ def s17_migration(prs):
 def s18_built(prs):
     s = slide(prs)
     eyebrow(s, "16 — What is built")
-    headline(s, "Not a prototype", size=H1, top=1.90)
+    headline(s, "Built, not planned", size=H1, top=1.90)
+    caption(s, "Everything in this deck works today. Nothing here is waiting "
+               "on a future release.",
+            top=3.20, size=23, color=BODY, width=13.0)
 
+    # Counts of screens, tables and security policies were in the first cut.
+    # They are build metrics: an agency buys outcomes and reassurance, so
+    # these are the four questions a property manager actually asks.
+    items = [("Your records stay yours",
+              "One agency cannot see another's tenancies, owners or money. "
+              "That separation sits in the database itself, not in the screen."),
+             ("English and Arabic",
+              "Built for Qatar from the start — QAR, Qatari lease terms, "
+              "cheque cycles and Doha districts, right-to-left included."),
+             ("Nothing is locked in",
+              "Statements export as PDF, the ledger feeds your accounting "
+              "software, and your records leave whenever you want them to."),
+             ("Every figure traces back",
+              "Each number on a statement opens onto the lease, the payment "
+              "and the date behind it. Nothing is a rounded summary.")]
     w, xs = col(4, gap=0.6)
-    stats = [("57", "Screens built, across five roles"),
-             ("70", "Tables in one connected schema"),
-             ("159", "Row-level security policies"),
-             ("5", "Roles, each with its own portal")]
-    for x, (value, label) in zip(xs, stats):
-        rule(s, x, 4.40, w, color=INK)
-        figure(s, x, 4.70, w, value, label, size=92)
-
-    rule(s, M, 8.30, CW)
-    text(s, M, 8.70, 10.6, 1.40,
-         "Separation is enforced by the database, not the screen. A manager "
-         "at one agency cannot read another agency's records even if the "
-         "application is wrong — the database refuses the row.",
-         size=22, color=BODY, line=1.44)
-    pairs(s, M + 11.4, 8.70, CW - 11.4,
-          [("Currency", "QAR"), ("Locale", "English and Arabic"),
-           ("Timezone", "Asia/Qatar")],
-          size=19, gap=0.62, key_color=MUTED, dividers=False, key_w=1.9)
+    for x, (title, bodytext) in zip(xs, items):
+        rule(s, x, 4.70, w, color=INK)
+        text(s, x, 5.02, w, 1.10, title, font=DISPLAY, size=25, color=INK,
+             bold=True, line=1.18)
+        text(s, x, 6.30, w, 2.6, bodytext, size=20, color=BODY, line=1.42)
     page_mark(s, 18)
     return s
 
