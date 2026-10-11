@@ -85,10 +85,10 @@ three groups, listed at the bottom.
 | `migration` | built, `/import` |
 | `import` | built, `/import` |
 | `departments` | **needs schema** — no `departments` table |
-| `mandates` | **needs schema** — no `mandates` table |
-| `mandate` | **needs schema** — no `mandates` table |
-| `undertakings` | **needs schema** — no `undertakings` table |
-| `undertaking` | **needs schema** — no `undertakings` table |
+| `mandates` | **schema ready** (0018), screen not built |
+| `mandate` | **schema ready** (0018), screen not built |
+| `undertakings` | **schema ready** (0018), screen not built |
+| `undertaking` | **schema ready** (0018), screen not built |
 | `contracts` | **needs schema** — see note below |
 | `contract` | **needs schema** — see note below |
 | `movein` | **needs schema** — no `movein_checklists` table |
@@ -117,7 +117,7 @@ All 10 built. `owner-mandate` and `owner-offers` read
 | `owner-stmt` | built, `/owner/statements` |
 | `owner-maint` | built, `/owner/maintenance` |
 | `owner-docs` | built, `/owner/documents` |
-| `owner-mandate` | built, `/owner/mandate`, **stub data** |
+| `owner-mandate` | built, `/owner/mandate`, **stub data** — 0018 can replace it |
 | `owner-offers` | built, `/owner/offers`, **stub data** |
 
 ## Tenant portal
@@ -167,10 +167,16 @@ and `/invite/[token]` (which serves all four invitation variants).
 
 ## What is left, grouped
 
-**1. Needs new tables (16 screens).** Departments, mandates,
-undertakings, move-in checklists, brokers, renewals pipeline, vendor
-completion and terms, and five platform-admin screens. Each needs a
-migration before a screen is worth writing.
+**1. Needs new tables (12 screens).** Departments, move-in checklists,
+brokers, renewals pipeline, vendor completion and terms, and five
+platform-admin screens. Each needs a migration before a screen is worth
+writing.
+
+**1b. Schema ready, screen not built (4).** Mandates list and detail,
+undertakings list and detail. Migration 0018 adds `mandates`,
+`mandate_properties` and `undertakings`; the four staff screens and the
+owner portal's mandate screen can now read real data instead of
+`features/portals/owner-stub-data.ts`.
 
 **2. Already has a screen, missing part of it (3).**
 

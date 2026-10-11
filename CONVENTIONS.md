@@ -86,6 +86,32 @@ something here, not just that there is nothing.
 **Nothing clips.** Check a new screen appears in `npx next build` output
 and that `npx tsc --noEmit` and `npx eslint` are clean before committing.
 
+## Row level security
+
+**Run `npm run test:rls` after touching a policy.** It applies every
+migration to a throwaway local Postgres and asserts 42 access cases. Two
+RLS faults shipped without it, and neither was visible from the app: a
+superuser and the service-role key both bypass RLS, so only a
+non-superuser with a JWT subject set finds them.
+
+**`is_org_staff(org)` for staff access, `is_org_member(org)` only where a
+portal user genuinely belongs.** Membership means "has a row in
+organisation_members", and tenants, owners and vendors with portal logins
+all have one. `is_org_member` on a staff read policy hands a tenant the
+whole organisation.
+
+**A child policy must not read a parent that reads the child back.**
+That cycle makes Postgres abort the query with "infinite recursion
+detected in policy", which takes the table down for everyone, not just
+the portal user the policy was for. Resolve the parent through a
+`security definer` helper instead — `property_organisation(uuid)` and
+`unit_organisation(uuid)` exist for this, and both pin `search_path`.
+
+**Every new table needs its portal clause written at the same time as its
+staff clause,** plus a case in the access matrix. `owners` went without a
+self-select policy for five migrations because the leak made it look like
+it worked.
+
 ## Before building a screen, check it does not already exist
 
 Four finished features in this codebase were unreachable because the route
